@@ -7,8 +7,6 @@ import com.trabauer.twitchtools.VideoPart;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -19,12 +17,12 @@ public class Twitch {
 
     private static String apiURL = "https://api.twitch.tv";
 
-    public static Video getPastBroadcastById(String id) {
+    public static TwitchVideo getPastBroadcastById(String id) {
         InputStream infoIs = null;
         InputStream dlInfoIs = null;
         Scanner infoSc = null;
         Scanner dlInfoSc = null;
-        Video video = null;
+        TwitchVideo video = null;
 
 
         try {
@@ -50,7 +48,7 @@ public class Twitch {
             Gson gson = new Gson();
             BroadCastInfo broadCastInfo = gson.fromJson(infoJsonStr, BroadCastInfo.class);
             DownloadInfo downloadInfo = gson.fromJson(dlInfoJsonStr, DownloadInfo.class);
-            video = new Video(
+            video = new TwitchVideo(
                     broadCastInfo.getTitle(),
                     broadCastInfo.getDescription(),
                     broadCastInfo.getBroadcastId(),
@@ -67,7 +65,7 @@ public class Twitch {
 
             for(String key: downloadInfo.getAllParts().keySet()) {
                 for(DownloadInfo.BroadCastPart broadCastPart: downloadInfo.getAllParts().get(key)) {
-                    video.addVideoPart(key, new VideoPart(new URL(broadCastPart.url), broadCastPart.length,
+                    video.addVideoPart(key, new TwitchVideoPart(new URL(broadCastPart.url), broadCastPart.length,
                             new URL(broadCastPart.vodCountUrl), broadCastPart.upkeep));
                 }
             }
@@ -90,7 +88,7 @@ public class Twitch {
         return video;
     }
 
-    public static Video getPastBroadcastByUrl(URL twitchUrl) {
+    public static TwitchVideo getPastBroadcastByUrl(URL twitchUrl) {
         if(Pattern.matches("http://www.twitch.tv/\\w+/b/\\d+", twitchUrl.toString())) {
             String id = twitchUrl.toString().split("/")[5];
              return getPastBroadcastById(id);

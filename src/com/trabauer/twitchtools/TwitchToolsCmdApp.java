@@ -1,6 +1,8 @@
 package com.trabauer.twitchtools;
 
 import com.trabauer.twitchtools.twitch.Twitch;
+import com.trabauer.twitchtools.twitch.TwitchVideo;
+import com.trabauer.twitchtools.twitch.TwitchVideoPart;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,10 +10,10 @@ import java.net.URL;
 /**
  * Created by flo on 03.11.14.
  */
-public class TwitchToolsApp {
+public class TwitchToolsCmdApp {
     public static void main(String[] argv) {
 
-        Video video = null;
+        TwitchVideo video = null;
         URL twitchUrl = null;
         String quality = null;
 
@@ -37,15 +39,37 @@ public class TwitchToolsApp {
         video = Twitch.getPastBroadcastByUrl(twitchUrl);
         System.out.println("Downloading " + video.getTitle());
 
+
+
+
         System.out.println("Available Qualities:");
         for(String qual: video.getAvailableQualities()) {
             System.out.println("\t" + qual);
         }
 
+        downloadBroadcast(video);
+
+
+
 
     }
 
+    private static void downloadBroadcast(TwitchVideo video) {
+        System.out.println("Best available quality is " + video.getBestAvailableQuality() + "-quality");
+        for(VideoPart videoPart: video.getVideoParts(video.getBestAvailableQuality())) {
+            downloadPart(videoPart);
+        }
+    }
+
+    private static void downloadPart(VideoPart videoPart) {
+        System.out.println("Downloading " + videoPart.getUrl());
+    }
+
     private static void interactiveShell() {
+            //TODO implement interactive mode
+            System.out.println("Not implemented yet!");
+
+
 
 
     }

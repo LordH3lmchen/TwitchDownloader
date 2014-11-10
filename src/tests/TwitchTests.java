@@ -1,8 +1,6 @@
 package tests;
 
 import com.google.gson.Gson;
-import com.json.parsers.JSONParser;
-import com.json.parsers.JsonParserFactory;
 import com.trabauer.twitchtools.Video;
 import com.trabauer.twitchtools.twitch.BroadCastInfo;
 import com.trabauer.twitchtools.twitch.DownloadInfo;

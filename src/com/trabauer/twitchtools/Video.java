@@ -34,41 +34,21 @@ public class Video {
 
     private String title;
     private String description;
-    private String broadcastId;
-    private String tagList;
-    private String id;
-    private Calendar recordedAt;
-    private String game;
-    private int length; // Vermutlich int
-    private URL preview; //Image
-    private URL url; //URL To TwitchPage
-    private int views;
-    private URL channelLink;
-    private URL selfLink;
-    private String channelName;
-    private String channelDisplayName;
+
+    private int length;
+
 
     private HashMap<String, ArrayList<VideoPart>> videoParts;
 
     public Video(String title) {
-        this(title, null, null, null, null, null, null, -1, null, null, null, null);
+        this(title, null, -1);
 
     }
 
-    public Video(String title, String description, String broadcastId, String tagList, String id, Calendar recordedAt,
-                 String game, int length, URL preview, URL url, String channelName, String channelDisplayName) {
+    public Video(String title, String description,int length) {
         this.title = title;
         this.description = description;
-        this.broadcastId = broadcastId;
-        this.tagList = tagList;
-        this.id = id;
-        this.recordedAt = recordedAt;
-        this.game = game;
         this.length = length;
-        this.preview = preview;
-        this.url = url;
-        this.channelName = channelName;
-        this.channelDisplayName = channelDisplayName;
         videoParts = new HashMap<String, ArrayList<VideoPart>>();
     }
 
@@ -77,25 +57,16 @@ public class Video {
         return "Video{" +
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", broadcastId='" + broadcastId + '\'' +
-                ", tagList='" + tagList + '\'' +
-                ", id='" + id + '\'' +
-                ", recordedAt=" + recordedAt +
-                ", game='" + game + '\'' +
-                ", length=" + length +
-                ", preview=" + preview +
-                ", url=" + url +
-                ", views=" + views +
-                ", channelLink=" + channelLink +
-                ", selfLink=" + selfLink +
-                ", channelName='" + channelName + '\'' +
-                ", channelDisplayName='" + channelDisplayName + '\'' +
                 ", videoParts=" + videoParts +
                 '}';
     }
 
     public HashMap<String, ArrayList<VideoPart>> getVideoParts() {
         return videoParts;
+    }
+
+    public ArrayList<VideoPart> getVideoParts(String quality) {
+        return videoParts.get(quality);
     }
 
     public void setDownloadURLs(String quality, ArrayList<VideoPart> urls) {
@@ -131,83 +102,11 @@ public class Video {
         this.description = description;
     }
 
-    public String getBroadcastId() {
-        return broadcastId;
-    }
-
-    public void setBroadcastId(String broadcastId) {
-        this.broadcastId = broadcastId;
-    }
-
-    public String getTagList() {
-        return tagList;
-    }
-
-    public void setTagList(String tagList) {
-        this.tagList = tagList;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Calendar getRecordedAt() {
-        return recordedAt;
-    }
-
-    public void setRecordedAt(Calendar recordedAt) {
-        this.recordedAt = recordedAt;
-    }
-
-    public String getGame() {
-        return game;
-    }
-
-    public void setGame(String game) {
-        this.game = game;
-    }
-
     public int getLength() {
         return length;
     }
 
     public void setLength(int length) {
         this.length = length;
-    }
-
-    public URL getPreview() {
-        return preview;
-    }
-
-    public void setPreview(URL preview) {
-        this.preview = preview;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
-    public void setUrl(URL url) {
-        this.url = url;
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public void setChannelName(String channelName) {
-        this.channelName = channelName;
-    }
-
-    public String getChannelDisplayName() {
-        return channelDisplayName;
-    }
-
-    public void setChannelDisplayName(String channelDisplayName) {
-        this.channelDisplayName = channelDisplayName;
     }
 }

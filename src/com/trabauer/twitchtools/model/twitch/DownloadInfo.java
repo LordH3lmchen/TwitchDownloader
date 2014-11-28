@@ -1,4 +1,4 @@
-package com.trabauer.twitchtools.twitch;
+package com.trabauer.twitchtools.model.twitch;
 
 import com.google.gson.annotations.SerializedName;
 

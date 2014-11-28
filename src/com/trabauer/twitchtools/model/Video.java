@@ -1,12 +1,14 @@
-package com.trabauer.twitchtools;
+package com.trabauer.twitchtools.model;
 
-import java.net.URL;
 import java.util.*;
 
 /**
  * Created by flo on 03.11.14.
  */
-public class Video {
+public class Video extends Observable {
+    /**
+     * Ein Video Objekt enthält Informationen zu einem Video
+     */
 
     /*
     {
@@ -37,8 +39,13 @@ public class Video {
 
     private int length;
 
-
     private HashMap<String, ArrayList<VideoPart>> videoParts;
+
+
+    public Video() {
+        this("None");
+    }
+
 
     public Video(String title) {
         this(title, null, -1);
@@ -46,6 +53,7 @@ public class Video {
     }
 
     public Video(String title, String description,int length) {
+        super();
         this.title = title;
         this.description = description;
         this.length = length;
@@ -109,4 +117,12 @@ public class Video {
     public void setLength(int length) {
         this.length = length;
     }
+
+    public LinkedHashMap<String, String> getStreamInformation() {
+        LinkedHashMap<String, String> streamInformation = new LinkedHashMap<String, String>();
+        streamInformation.put("Title", getTitle());
+        streamInformation.put("Description", getDescription());
+        return streamInformation;
+    }
+
 }

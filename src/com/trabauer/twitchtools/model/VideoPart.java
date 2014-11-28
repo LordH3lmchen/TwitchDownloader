@@ -1,4 +1,4 @@
-package com.trabauer.twitchtools;
+package com.trabauer.twitchtools.model;
 
 import java.net.URL;
 
@@ -7,10 +7,12 @@ import java.net.URL;
  */
 public class VideoPart {
     private URL url;
+    private int partNumber;
 
 
-    public VideoPart(URL url) {
+    public VideoPart(URL url, int partNumber) {
         this.url = url;
+        this.partNumber = partNumber;
     }
 
     @Override
@@ -22,5 +24,9 @@ public class VideoPart {
 
     public URL getUrl() {
         return url;
+    }
+
+    public int getPartNumber() {
+        return partNumber;
     }
 }

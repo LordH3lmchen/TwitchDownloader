@@ -1,4 +1,3 @@
 Manifest-Version: 1.0
-Class-Path: com.trabauer.twitchtools
-Main-Class: com.trabauer.twitchtools.TwitchToolsCmdApp
+Main-Class: com.trabauer.twitchtools.TwitchToolsApp
 

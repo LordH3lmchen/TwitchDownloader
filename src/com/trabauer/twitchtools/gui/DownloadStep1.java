@@ -18,11 +18,9 @@ public class DownloadStep1 {
 
     public DownloadStep1() {
         super();
-
-        //NextActionListener nextActionListener = new NextActionListener();
         nextButton.setActionCommand("nextButton1");
-        //nextButton.addActionListener(nextActionListener);
-        //twitchUrlTextField.addActionListener(nextActionListener);
+        twitchUrlTextField.setToolTipText("Enter the URL of the past broadcast here. " +
+                "Usually looks the URL looks like: \"http://www.twitch.tv/dreamhacksc2/b/593890038\"");
     }
 
 

@@ -16,8 +16,8 @@ public class FilenamePatternsComboBoxModel implements MutableComboBoxModel<Strin
     private ArrayList<String> filenamePatterns;
     private int selectedItemIndex = 0;
 
-    //Some usefull examples
-    private static String[] EXAMPLE_PATTERNS = {"$(channel)-$(title)", "$(channel)/$(title)"};
+    //Some useful examples
+    private static String[] EXAMPLE_PATTERNS = {"$(game)/$(channel)/$(title)", "$(channel)-$(title)", "$(channel)/$(title)"};
 
 
     public FilenamePatternsComboBoxModel() {

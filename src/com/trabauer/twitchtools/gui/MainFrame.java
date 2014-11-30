@@ -37,7 +37,7 @@ public class MainFrame extends JFrame {
 
 
     public MainFrame (){
-        super("Twitch Tools");
+        super("Twitch - Past Broadcast Loader");
 
         mainFramePanel = (JPanel) getContentPane();
         //mainFramePanel = new JPanel(new CardLayout())
@@ -60,8 +60,8 @@ public class MainFrame extends JFrame {
 
 //        add(mainForm.getMainPanel());
 
-        setMinimumSize(new Dimension(300, 100));
-        setSize(500,200);
+        setMinimumSize(new Dimension(460, 180));
+        setSize(460,180);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
         setVisible(true);

@@ -11,7 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -36,10 +36,6 @@ public class Controller implements ActionListener , Observer {
         this.mainFrame = new MainFrame();
         this.twitchVideo = new TwitchVideo();
 
-
-
-        //mainFrame.addStepListener(this);
-        mainFrame.setSize(new Dimension(900,400));
 
         downloadStep1 = mainFrame.getDownloadStep1Form();
         downloadStep2 = mainFrame.getDownloadStep2Form();
@@ -102,7 +98,7 @@ public class Controller implements ActionListener , Observer {
             }
         } else if (e.getActionCommand().equals("nextButton2")) {
             String quality = downloadStep2.getQuality();
-            String filename = parseFilename(twitchVideo.getStreamInformation(), downloadStep2.getFilenameSelection());
+            String filename = downloadStep2.getFilenamePreview();
             String destinationDirectory = downloadStep2.getDestinationFolder();
             int threadcount = downloadStep2.getThreadCount();
             downloadPastBroadcast(filename, destinationDirectory, quality, threadcount, twitchVideo);
@@ -114,15 +110,21 @@ public class Controller implements ActionListener , Observer {
 
     private void downloadPastBroadcast(String filename, String destinationDirectory, String quality, int threadcount, TwitchVideo twitchVideo) {
         String filePath = destinationDirectory + "/" + filename;
+        File destinationFileTemplate = new File(filePath);
         TwitchDownloadQueue twitchDownloadQueue = new TwitchDownloadQueue(twitchVideo.getTwitchVideoParts(quality));
         String prefixLabelText = new String().format("%2d / %2d", twitchDownloadQueue.peekNextVideoPart().getPartNumber()+1, twitchDownloadQueue.getInitialSize());
         OverallProgressPanel overallProgressPanel = new OverallProgressPanel(twitchDownloadQueue.getInitialSize());
         downloadStep3.addOverallProgressPanel(overallProgressPanel);
 
+        File destinationFolder = destinationFileTemplate.getParentFile();
+        if(! destinationFolder.exists()) {
+            destinationFolder.mkdirs();
+        }
 
+        createM3uPlaylist(destinationFileTemplate, twitchDownloadQueue);
 
         for(int i=0; i<threadcount; i++){
-            TwitchDownloadWorker twitchDownloadWorker = new TwitchDownloadWorker(new File(filePath), twitchDownloadQueue);
+            TwitchDownloadWorker twitchDownloadWorker = new TwitchDownloadWorker(destinationFileTemplate, twitchDownloadQueue);
             DownloadProgressPanel downloadProgressPanel = new DownloadProgressPanel(prefixLabelText, "  0 %");
             downloadProgressPanel.setPartsToDownloadCount(twitchDownloadQueue.getInitialSize());
             twitchDownloadWorker.addPropertyChangeListener(downloadProgressPanel);
@@ -131,6 +133,44 @@ public class Controller implements ActionListener , Observer {
             twitchDownloadWorker.execute();
 
         }
+
+    }
+
+    private void createM3uPlaylist(File fileTemplate, TwitchDownloadQueue twitchDownloadQueue) {
+        File playlistFile = new File(fileTemplate + ".m3u");
+        int partCount = twitchDownloadQueue.getInitialSize();
+        String fileExtension = "";
+        int i = twitchDownloadQueue.peekNextVideoPart().getUrl().getFile().lastIndexOf('.');
+        if(i>0) fileExtension = twitchDownloadQueue.peekNextVideoPart().getUrl().getFile().substring(i);
+
+
+        FileWriter fileWriter = null;
+        try {
+            fileWriter = new FileWriter(playlistFile);
+            for(int j=0; j<partCount; j++) {
+                String filename = fileTemplate + "_" + String.valueOf(j) + fileExtension;
+                File partFile = new File(filename);
+                fileWriter.append(partFile.getName() + System.getProperty("line.separator"));
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if(fileWriter != null) {
+                try {
+                    fileWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
+
+
+
+
 
     }
 
@@ -169,7 +209,8 @@ public class Controller implements ActionListener , Observer {
             else
                 parsedFilename = parsedFilename.replaceAll(variable, "");
         }
-        parsedFilename = parsedFilename.replaceAll("[^a-zA-Z0-9\\.\\-/\\\\]", "");
+        parsedFilename = parsedFilename.replaceAll(" ", "_");
+        parsedFilename = parsedFilename.replaceAll("[^a-zA-Z0-9\\.\\-/\\\\_]", "");
         return parsedFilename;
     }
 
@@ -178,7 +219,7 @@ public class Controller implements ActionListener , Observer {
         int threadBandwidth;
 
         // might implement Bandwidth calculation with content length with the first Part of the Twitch Video
-        // Speed Values are based on messurements from twitch. Twitch sends the Data at full Speed at the beginnning and
+        // Speed Values are based on measurements from twitch. Twitch sends the Data at full Speed at the beginning and
         // Slows down after some time. That allows lag free Watching and good Bandwidth allocation for Everyone at home.
 
 

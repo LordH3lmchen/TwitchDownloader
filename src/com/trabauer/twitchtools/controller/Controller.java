@@ -59,6 +59,7 @@ public class Controller implements ActionListener , Observer {
         twitchVideo.addObserver(this);
         twitchVideo.addObserver(filenamePatternsComboBoxModel);
         twitchVideo.addObserver(videoQualityComboBoxModel);
+        twitchVideo.addObserver(downloadStep2);
 
     }
 

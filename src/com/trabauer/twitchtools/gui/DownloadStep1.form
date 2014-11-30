@@ -4,7 +4,7 @@
     <rowspec value="center:d:grow"/>
     <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
-    <colspec value="right:m:grow(0.1)"/>
+    <colspec value="right:m:noGrow"/>
     <colspec value="left:4dlu:noGrow"/>
     <colspec value="right:d:grow"/>
     <constraints>

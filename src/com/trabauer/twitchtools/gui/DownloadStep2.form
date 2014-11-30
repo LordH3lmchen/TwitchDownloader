@@ -102,7 +102,7 @@
           <editable value="true"/>
         </properties>
       </component>
-      <grid id="825c2" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+      <grid id="825c2" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="2">
         <constraints>
           <grid row="10" column="0" row-span="1" col-span="7" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
           <forms/>

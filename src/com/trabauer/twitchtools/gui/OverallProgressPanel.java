@@ -27,6 +27,7 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
         this.partCount = partCount;
         overallProgressBar = new JProgressBar(0, 100 * partCount);
         progressLabel = new JLabel("".format(" %3d%% (%d/%d)", 0, 0, partCount));
+        progressLabel.setToolTipText("( parts done / number of parts )");
         add(new JLabel("Overall Progress "));
         add(overallProgressBar);
         add(progressLabel);

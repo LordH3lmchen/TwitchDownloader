@@ -37,10 +37,13 @@ public class MainFrame extends JFrame {
 
 
     public MainFrame (){
-        super("TwitchTools");
+        super("Twitch Tools");
 
         mainFramePanel = (JPanel) getContentPane();
-        mainFramePanel.setLayout(new CardLayout());
+        //mainFramePanel = new JPanel(new CardLayout())
+        mainFramePanel.setLayout(new CardLayout(5, 5));
+
+        //mainFramePanel.
 
 //        mainForm = new MainForm(controller);
 //        mainForm.addMainFormListener(controller);

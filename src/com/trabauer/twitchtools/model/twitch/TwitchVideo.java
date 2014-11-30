@@ -216,8 +216,6 @@ public class TwitchVideo extends Video {
 
     public void setId(String id) {
         this.id = id;
-        setChanged();
-        notifyObservers();
     }
 
     public Calendar getRecordedAt() {

@@ -1,5 +1,3 @@
-# TwitchTools
-
 It's a small tool to download past broadcasts from Twitch.tv. You can enter a URL to a past broadcast.
 
 ## HowTo use it:
@@ -18,7 +16,7 @@ This is an early version. Some features will be implemented in the future.
 
 
 
-Compiled JAR
+# Compiled JAR
 http://trabauer.com/downloads/TwitchTools.jar
 
 

@@ -14,7 +14,6 @@ A m3u-playlist is created to make watching the past broadcast easier.
 This is an early version. Some features will be implemented in the future.
 
 * Saving the last download destination folder and filename template.
-  (Should make this Tool more useable - if u Downloead a lot of broadcasts) 
 * FFMPEG support
 
 

@@ -85,7 +85,6 @@ public class BroadCastInfo {
 
         Calendar recordedAtCalendar = GregorianCalendar.getInstance();
         recordedAtCalendar.set(year, month-1, day, hourOfDay, minute, secound);
-        System.out.printf("reacordedAt %tF %tT", recordedAtCalendar, recordedAtCalendar);
         return recordedAtCalendar;
     }
 

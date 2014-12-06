@@ -87,7 +87,7 @@ public class Controller implements ActionListener , Observer, NodeChangeListener
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println(e.getActionCommand());
+        //System.out.println(e.getActionCommand());
         if(e.getActionCommand().equals("selectDestDirBtnPressed")){
             destinationDirectory = mainFrame.showDestinationDirChooser(prefs.get(DESTINATION_DIR_PREFKEY, OsUtils.getUserHome()));
             downloadStep2.setDestFolderTextField(destinationDirectory.toString());
@@ -263,7 +263,7 @@ public class Controller implements ActionListener , Observer, NodeChangeListener
     @Override
     public void update(Observable o, Object arg) {
         if(o.equals(twitchVideo)) {
-            System.out.println("Twitch Video updated!");
+            //System.out.println("Twitch Video updated!");
             updateFilenamePatternsComboBoxModel();
         }
 
@@ -272,6 +272,7 @@ public class Controller implements ActionListener , Observer, NodeChangeListener
     private void updateFilenamePatternsComboBoxModel() {
         final String[] EXAMPLE_PATTERNS = {
                 "$(game)/$(channel)/$(title)",
+                "$(game)/$(channel)/$(title)_$(date)_T$(time)",
                 "$(channel)-$(title)",
                 "$(channel)/$(title)" };
         String lastUsedPattern = prefs.get(FILENAME_PATTERN_PREFKEY, null);

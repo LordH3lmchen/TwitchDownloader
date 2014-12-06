@@ -16,8 +16,6 @@ public class FilenamePatternsComboBoxModel implements MutableComboBoxModel<Strin
     private ArrayList<String> filenamePatterns;
     private int selectedItemIndex = 0;
 
-    //Some useful examples
-    private static String[] EXAMPLE_PATTERNS = {"$(channel)-$(title)", "$(channel)/$(title)"};
 
 
     public FilenamePatternsComboBoxModel() {
@@ -33,7 +31,6 @@ public class FilenamePatternsComboBoxModel implements MutableComboBoxModel<Strin
 
     public FilenamePatternsComboBoxModel(String[] keys) {
         this();
-        ;
     }
 
     @Override
@@ -86,8 +83,9 @@ public class FilenamePatternsComboBoxModel implements MutableComboBoxModel<Strin
 
     @Override
     public void update(Observable o, Object arg) {
+        //STUB
         if(o.getClass().equals(TwitchVideo.class)) { //Observed TwichVideo changed update Observers
-            TwitchVideo twitchVideo = (TwitchVideo)o;
+            //TwitchVideo twitchVideo = (TwitchVideo)o;
             //this.filenamePatterns = new ArrayList<String>();
         }
     }

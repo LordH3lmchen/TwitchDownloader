@@ -1,6 +1,7 @@
 package com.trabauer.twitchtools.gui;
 
 import com.trabauer.twitchtools.controller.Controller;
+import com.trabauer.twitchtools.utils.OsUtils;
 import com.trabauer.twitchtools.utils.OsValidator;
 import com.trabauer.twitchtools.utils.UnsupportedOsException;
 
@@ -85,25 +86,14 @@ public class MainFrame extends JFrame {
     }
 
     public File showDestinationDirChooser() {
+        return showDestinationDirChooser(OsUtils.getUserHome());
+    }
+
+    public File showDestinationDirChooser(String path) {
         fileChooser = null;
         File file = null;
 
-        if(OsValidator.isWindows()) {
-            fileChooser = new JFileChooser(System.getenv().get("USERPROFILE"));
-        }
-        else if(OsValidator.isMac()) {
-            fileChooser = new JFileChooser(System.getenv().get("HOME"));
-        }
-        else if(OsValidator.isUnix()) {
-            fileChooser = new JFileChooser(System.getenv().get("HOME"));
-        }
-        else {
-            try {
-                throw new UnsupportedOsException();
-            } catch (UnsupportedOsException e1) {
-                e1.printStackTrace();
-            }
-        }
+        fileChooser = new JFileChooser(path);
 
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if(fileChooser != null) {
@@ -111,7 +101,6 @@ public class MainFrame extends JFrame {
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 file = fileChooser.getSelectedFile();
-                downloadStep2Form.setDestFolderTextField(file.toString());
             }
 
 

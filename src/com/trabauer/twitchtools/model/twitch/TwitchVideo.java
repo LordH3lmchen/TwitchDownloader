@@ -20,7 +20,7 @@ public class TwitchVideo extends Video {
      *
      */
 
-    private String APIURL = "https://api.twitch.tv";
+    public static final String APIURL = "https://api.twitch.tv";
 
     private String broadcastId;
     private String tagList;
@@ -39,12 +39,24 @@ public class TwitchVideo extends Video {
 
 
 
+
+
     /**
      * Representiert ein TwitchVideo
      */
     public TwitchVideo() {
         super();
         this.twitchVideoParts = new HashMap<String, ArrayList<TwitchVideoPart>>();
+        this.broadcastId = "";
+        this.tagList = "";
+        this.id = "";
+        this.game = "";
+        this.channelName = "";
+        this.channelDisplayName = "";
+        this.preview = null;
+
+
+
     }
 
     /**
@@ -234,6 +246,30 @@ public class TwitchVideo extends Video {
         this.game = game;
     }
 
+    public int getViews() {
+        return views;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
+    public URL getChannelLink() {
+        return channelLink;
+    }
+
+    public void setChannelLink(URL channelLink) {
+        this.channelLink = channelLink;
+    }
+
+    public URL getSelfLink() {
+        return selfLink;
+    }
+
+    public void setSelfLink(URL selfLink) {
+        this.selfLink = selfLink;
+    }
+
     public String getBestAvailableQuality() {
         ArrayList<String> orderedQualitiesDescending = new ArrayList<String>();
         orderedQualitiesDescending.add("source");
@@ -371,15 +407,31 @@ public class TwitchVideo extends Video {
 
     @Override
     public LinkedHashMap<String, String> getStreamInformation() {
-        LinkedHashMap<String, String> streamInformation = super.getStreamInformation();
-        streamInformation.put("Channel", getChannelName());
-        streamInformation.put("ChannelDisplayName", getChannelDisplayName());
+        LinkedHashMap<String, String> streamInfo = super.getStreamInformation();
+        streamInformationPut("Channel", getChannelName());
+        streamInformationPut("ChannelDisplayName", getChannelDisplayName());
         //streamInformation.put("RecordedAt", getRecordedAt().getDisplayName(Calendar.YEAR, Calendar.SHORT, Locale.ENGLISH));
-        streamInformation.put("Game", getGame());
-        streamInformation.put("BestQuality", getBestAvailableQuality());
+        streamInformationPut("Game", getGame());
+        streamInformationPut("BestQuality", getBestAvailableQuality());
+        streamInformationPut("broadcastId", getBroadcastId());
+        streamInformationPut("tagList", getTagList());
+        streamInformationPut("id", getId());
+        streamInformationPut("previewImageURL", getPreview());
+        streamInformationPut("url", getUrl());
+        streamInformationPut("views", String.valueOf(views));
+        streamInformationPut("channelLink", getChannelLink());
+        streamInformationPut("selfLink", getChannelLink());
 
-        return streamInformation;
+        if(getRecordedAt()!= null) {
+            String timestamp = "".format("%tF_%tT", getRecordedAt(), getRecordedAt());
+            streamInformationPut("recorded-at", timestamp);
+            streamInformationPut("date", new String().format("%tF", getRecordedAt()));
+            streamInformationPut("time", new String().format("%tT", getRecordedAt()));
+        }
+
+        return streamInfo;
     }
+
 
 
     @Override

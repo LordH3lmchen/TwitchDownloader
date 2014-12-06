@@ -43,7 +43,7 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
      */
     @Override
     protected Void doInBackground() throws Exception {
-        Random random = new Random(); //TODO Method Stub
+        Random random = new Random();
 
         videoPart = null;
 

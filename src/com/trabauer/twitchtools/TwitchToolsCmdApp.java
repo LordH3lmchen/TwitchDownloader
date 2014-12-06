@@ -115,7 +115,7 @@ public class TwitchToolsCmdApp {
     }
 
     private static void interactiveShell() {
-            //TODO implement interactive mode
+
             System.out.println("Not implemented yet!");
 
 

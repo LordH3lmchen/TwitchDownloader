@@ -6,6 +6,7 @@ import com.trabauer.twitchtools.model.VideoQualityComboBoxModel;
 import com.trabauer.twitchtools.model.twitch.TwitchDownloadQueue;
 import com.trabauer.twitchtools.model.twitch.TwitchVideo;
 import com.trabauer.twitchtools.tasks.TwitchDownloadWorker;
+import com.trabauer.twitchtools.utils.OsUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,11 +16,12 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.prefs.*;
 
 /**
  * Created by Flo on 13.11.2014.
  */
-public class Controller implements ActionListener , Observer {
+public class Controller implements ActionListener , Observer, NodeChangeListener, PreferenceChangeListener {
 
     private TwitchVideo twitchVideo = null;
     private File destinationDirectory;
@@ -30,12 +32,22 @@ public class Controller implements ActionListener , Observer {
     private DownloadStep2 downloadStep2;
     private DownloadStep3 downloadStep3;
 
+    private Preferences prefs;
+
+    private static String DESTINATION_DIR_PREFKEY = "destinationDir",
+                          FILENAME_PATTERN_PREFKEY = "filenamePattern";
+
+
+
     public Controller() {
         super();
         this.destinationDirectory = null;
         this.mainFrame = new MainFrame();
         this.twitchVideo = new TwitchVideo();
 
+        prefs = Preferences.userRoot().node("/com/trabauer/twitchtools");
+        prefs.addNodeChangeListener(this);
+        prefs.addPreferenceChangeListener(this);
 
         downloadStep1 = mainFrame.getDownloadStep1Form();
         downloadStep2 = mainFrame.getDownloadStep2Form();
@@ -45,8 +57,10 @@ public class Controller implements ActionListener , Observer {
         downloadStep2.addActionListener(this);
         downloadStep3.addActionListener(this);
 
-        filenamePatternsComboBoxModel = new FilenamePatternsComboBoxModel(twitchVideo);
+        filenamePatternsComboBoxModel = new FilenamePatternsComboBoxModel();
+        updateFilenamePatternsComboBoxModel();
         downloadStep2.setFilenamePatternsComboBoxModel(filenamePatternsComboBoxModel);
+        downloadStep2.setDestFolderTextField(prefs.get(DESTINATION_DIR_PREFKEY, OsUtils.getUserHome()));
 
         videoQualityComboBoxModel = new VideoQualityComboBoxModel(twitchVideo);
         downloadStep2.setQualityComboBoxModel(videoQualityComboBoxModel);
@@ -75,15 +89,18 @@ public class Controller implements ActionListener , Observer {
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
         if(e.getActionCommand().equals("selectDestDirBtnPressed")){
-            destinationDirectory = mainFrame.showDestinationDirChooser();
+            destinationDirectory = mainFrame.showDestinationDirChooser(prefs.get(DESTINATION_DIR_PREFKEY, OsUtils.getUserHome()));
             downloadStep2.setDestFolderTextField(destinationDirectory.toString());
+            prefs.put(DESTINATION_DIR_PREFKEY, destinationDirectory.toString());
         } else if (e.getActionCommand().equals("backButton2")) {
             mainFrame.showPreviousCard();
         } else if (e.getActionCommand().equals("filenameChanged")) {
             downloadStep2.setFileNamePreview(parseFilename(twitchVideo.getStreamInformation(), downloadStep2.getFilenameSelection()));
+            prefs.put(FILENAME_PATTERN_PREFKEY, downloadStep2.getFilenameSelection());
         } else if ((e.getActionCommand().equals("comboBoxEdited"))&(e.getSource().getClass().equals(JComboBox.class)) ) {
             JComboBox jcb = (JComboBox)e.getSource();
             downloadStep2.setFileNamePreview(parseFilename(twitchVideo.getStreamInformation(), (String)jcb.getEditor().getItem()));
+            prefs.put(FILENAME_PATTERN_PREFKEY, (String)jcb.getEditor().getItem());
         } else if (e.getActionCommand().equals("threadCountChanged")) {
             updateBandwidthUsage();
         } else if (e.getActionCommand().equals("qualityChanged")) {
@@ -245,10 +262,50 @@ public class Controller implements ActionListener , Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        if(o.equals(twitchVideo)) System.out.println("Twitch Video updated!");
+        if(o.equals(twitchVideo)) {
+            System.out.println("Twitch Video updated!");
+            updateFilenamePatternsComboBoxModel();
+        }
 
     }
 
+    private void updateFilenamePatternsComboBoxModel() {
+        final String[] EXAMPLE_PATTERNS = {
+                "$(game)/$(channel)/$(title)",
+                "$(channel)-$(title)",
+                "$(channel)/$(title)" };
+        String lastUsedPattern = prefs.get(FILENAME_PATTERN_PREFKEY, null);
+
+        if(lastUsedPattern != null)
+            if(!filenamePatternsComboBoxModel.containsElement(lastUsedPattern))
+                filenamePatternsComboBoxModel.addElement(lastUsedPattern);
+        for(String example: EXAMPLE_PATTERNS)
+            if (!filenamePatternsComboBoxModel.containsElement(example))
+                filenamePatternsComboBoxModel.addElement(example);
+        for(String key: twitchVideo.getStreamInformation().keySet()) {
+            key = "$("+ key.toLowerCase() + ")";
+            if(!filenamePatternsComboBoxModel.containsElement(key))
+                filenamePatternsComboBoxModel.addElement(key.toLowerCase());
+        }
+    }
 
 
+    @Override
+    public void childAdded(NodeChangeEvent evt) {
+        Preferences parent = evt.getParent(), child = evt.getChild();
+        System.out.println( parent.name() + " hat neuen Knoten " + child.name());
+    }
+
+    @Override
+    public void childRemoved(NodeChangeEvent evt) {
+        Preferences parent = evt.getParent(), child = evt.getChild();
+        System.out.println( parent.name() + " verliert Knoten " + child.name());
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        String key = evt.getKey(), value = evt.getNewValue();
+        Preferences node = evt.getNode();
+        System.out.println( node.name() + "hat einen neuen Wert für " + value + " für " + key);
+    }
 }

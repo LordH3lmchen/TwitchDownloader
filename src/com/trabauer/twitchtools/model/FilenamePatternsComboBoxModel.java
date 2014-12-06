@@ -17,7 +17,7 @@ public class FilenamePatternsComboBoxModel implements MutableComboBoxModel<Strin
     private int selectedItemIndex = 0;
 
     //Some useful examples
-    private static String[] EXAMPLE_PATTERNS = {"$(game)/$(channel)/$(title)", "$(channel)-$(title)", "$(channel)/$(title)"};
+    private static String[] EXAMPLE_PATTERNS = {"$(channel)-$(title)", "$(channel)/$(title)"};
 
 
     public FilenamePatternsComboBoxModel() {
@@ -31,15 +31,16 @@ public class FilenamePatternsComboBoxModel implements MutableComboBoxModel<Strin
         this.filenamePatterns = new ArrayList<String>(filenamePatterns);
     }
 
-    public FilenamePatternsComboBoxModel(TwitchVideo twitchVideo) {
+    public FilenamePatternsComboBoxModel(String[] keys) {
         this();
-        fillFilenamePatternsWithTwitchVideoKeys(twitchVideo);
+        ;
     }
 
     @Override
     public void setSelectedItem(Object anItem) {
         if(filenamePatterns.contains(anItem)) {
             selectedItemIndex = filenamePatterns.indexOf(anItem);
+            notifyListDataListeners();
         }
     }
 
@@ -70,47 +71,54 @@ public class FilenamePatternsComboBoxModel implements MutableComboBoxModel<Strin
 
     @Override
     public void addElement(String pattern) {
-        filenamePatterns.add(pattern);
+        if(pattern != null) {
+            filenamePatterns.add(pattern);
+            notifyListDataListeners();
+        }
+    }
+
+    public void addElement(String pattern, int index) {
+        if(pattern != null) {
+            filenamePatterns.add(index, pattern);
+            notifyListDataListeners();
+        }
     }
 
     @Override
     public void update(Observable o, Object arg) {
         if(o.getClass().equals(TwitchVideo.class)) { //Observed TwichVideo changed update Observers
             TwitchVideo twitchVideo = (TwitchVideo)o;
-            this.filenamePatterns = new ArrayList<String>();
-            fillFilenamePatternsWithTwitchVideoKeys(twitchVideo);
-
-            for(ListDataListener listener: listDataListeners) { // inform listeners about new Patterns
-                listener.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, getSize()-1));
-            }
+            //this.filenamePatterns = new ArrayList<String>();
         }
     }
 
-    /**
-     * füllt die verfügbaren patterns mit den verfügbaren Variablen.
-     * Ermöglicht dem User alle verfügbaren Variablen zu sehen und zu testen
-     * @param twitchVideo
-     */
-    private void fillFilenamePatternsWithTwitchVideoKeys(TwitchVideo twitchVideo) {
-        LinkedHashMap<String,String> streamInformation =  twitchVideo.getStreamInformation();
-        for(String pattern: EXAMPLE_PATTERNS) addElement(pattern);
-        for(String key: streamInformation.keySet()) addElement("$(" + key.toLowerCase() + ")");
-    }
 
 
     @Override
     public void removeElement(Object obj) {
         filenamePatterns.remove(obj);
-
+        notifyListDataListeners();
     }
 
     @Override
     public void insertElementAt(String item, int index) {
         filenamePatterns.add(index, item);
+        notifyListDataListeners();
     }
 
     @Override
     public void removeElementAt(int index) {
         filenamePatterns.remove(index);
+        notifyListDataListeners();
+    }
+
+    public boolean containsElement(String item) {
+        return filenamePatterns.contains(item);
+    }
+
+    private void notifyListDataListeners() {
+        for(ListDataListener listener: listDataListeners) {
+            listener.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, getSize()-1));
+        }
     }
 }

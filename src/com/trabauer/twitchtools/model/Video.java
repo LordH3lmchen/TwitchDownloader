@@ -41,6 +41,8 @@ public class Video extends Observable {
 
     private HashMap<String, ArrayList<VideoPart>> videoParts;
 
+    private LinkedHashMap<String, String> streamInformation;
+
 
     public Video() {
         this("None");
@@ -58,6 +60,7 @@ public class Video extends Observable {
         this.description = description;
         this.length = length;
         videoParts = new HashMap<String, ArrayList<VideoPart>>();
+        streamInformation = new LinkedHashMap<String, String>();
     }
 
     @Override
@@ -119,10 +122,16 @@ public class Video extends Observable {
     }
 
     public LinkedHashMap<String, String> getStreamInformation() {
-        LinkedHashMap<String, String> streamInformation = new LinkedHashMap<String, String>();
+        streamInformation = new LinkedHashMap<String, String>();
         streamInformation.put("Title", getTitle());
         streamInformation.put("Description", getDescription());
         return streamInformation;
+    }
+
+    protected void streamInformationPut(String key, Object value) {
+        if(value != null) {
+            streamInformation.put(key, value.toString());
+        }
     }
 
 }

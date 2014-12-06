@@ -13,7 +13,7 @@ import javax.swing.*;
 public class TwitchToolsApp{
     public static void main (String[] args) {
 
-
+        // Set look & feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException e) {

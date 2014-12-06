@@ -61,9 +61,6 @@ public class Step3Test {
             // http://www.twitch.tv/taketv/b/590565753
 
 
-            /*
-            TODO implement 1st try downloadPanel
-             */
 
             // 1st generate DownloadList
 
@@ -93,25 +90,6 @@ public class Step3Test {
             }
 
 
-
-
-            //2nd create MainTask
-
-
-            //add ProgressBars to Panel
-
-            //while list is not empty :take one URL from List and start download
-
-            //if List empty enable Finish Button and return to step one.
-
-            /**
-             * TODO After 1st working Download Panel Build a improved one
-             *
-             * After all that develop an improved version with multiple thread support. Create one MainThread that
-             * builds  the other DownloadThread s. Create the GUI based on the user-input (threadCount) and hook all up.
-             *
-             *
-             */
 
 
 

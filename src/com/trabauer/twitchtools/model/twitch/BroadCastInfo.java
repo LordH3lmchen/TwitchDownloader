@@ -81,10 +81,11 @@ public class BroadCastInfo {
         int day = new Integer(date.split("-")[2]);
         int hourOfDay = new Integer(time.split(":")[0]);
         int minute = new Integer(time.split(":")[1]);
-        int secound = new Integer(time.split(":")[2].substring(0,1));
+        int secound = new Integer(time.split(":")[2].substring(0,2));
 
         Calendar recordedAtCalendar = GregorianCalendar.getInstance();
-        recordedAtCalendar.set(year, month, day, hourOfDay, minute, secound);
+        recordedAtCalendar.set(year, month-1, day, hourOfDay, minute, secound);
+        System.out.printf("reacordedAt %tF %tT", recordedAtCalendar, recordedAtCalendar);
         return recordedAtCalendar;
     }
 

@@ -112,6 +112,7 @@ public class DownloadStep2 implements Observer, ChangeListener {
         return Integer.parseInt(spinnerValue);
     }
 
+
 //    public
 
 

@@ -18,7 +18,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="gson-2.3" level="project" />
+    <orderEntry type="library" name="gson-2.31" level="project" />
   </component>
 </module>
 

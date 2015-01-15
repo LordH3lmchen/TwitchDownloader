@@ -43,7 +43,6 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
      */
     @Override
     protected Void doInBackground() throws Exception {
-        Random random = new Random();
 
         videoPart = null;
 
@@ -59,7 +58,7 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
 
             int i = url.getFile().lastIndexOf('.');
             if(i>0) fileExtension = url.getFile().substring(i);
-
+            fileExtension = fileExtension.replaceAll("\\?.*$", "");
 
             try{
                 URLConnection urlConnection = url.openConnection();
@@ -82,8 +81,10 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                is.close();
+                fos.close();
             }
-
         }
         return null;
     }

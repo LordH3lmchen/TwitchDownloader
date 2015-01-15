@@ -29,9 +29,11 @@ public class TwitchVideoPart extends VideoPart{
         this(url, -1, -1, null, null);
     }
 
-    public  TwitchVideoPart(URL url, int length) {
-        this(url, -1, length, null, null);
+    public TwitchVideoPart(URL url, int partNumber) {
+        this(url, partNumber, -1, null, null);
     }
+
+
 
     public int getLength() {
         return length;

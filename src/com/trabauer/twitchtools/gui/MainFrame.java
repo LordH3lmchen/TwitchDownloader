@@ -5,12 +5,14 @@ import com.trabauer.twitchtools.utils.OsUtils;
 import com.trabauer.twitchtools.utils.OsValidator;
 import com.trabauer.twitchtools.utils.UnsupportedOsException;
 
+import javax.imageio.ImageIO;
 import javax.smartcardio.Card;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,10 +28,12 @@ public class MainFrame extends JFrame {
     private DownloadStep1 downloadStep1Form;
     private DownloadStep2 downloadStep2Form;
     private DownloadStep3 downloadStep3Form;
+    private DownloadStep4 downloadStep4Form;
 
     private final String DOWNLOAD1CARD = "DownloadStep1";
     private final String DOWNLOAD2CARD = "DownloadStep2";
     private final String DOWNLOAD3CARD = "DownloadStep3";
+    private final String DOWNLOAD4CARD = "DownloadStep4";
 
 
     private JPanel mainFramePanel;
@@ -44,25 +48,37 @@ public class MainFrame extends JFrame {
         //mainFramePanel = new JPanel(new CardLayout())
         mainFramePanel.setLayout(new CardLayout(5, 5));
 
+
         //mainFramePanel.
 
 //        mainForm = new MainForm(controller);
 //        mainForm.addMainFormListener(controller);
 
 
-        downloadStep1Form = new DownloadStep1();
+        Image icon = null;
+        try {
+            icon = ImageIO.read(getClass().getResource("twitchTool.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        setIconImage(icon);
+
+        downloadStep1Form = new DownloadStep1(icon);
         downloadStep2Form = new DownloadStep2();
         downloadStep3Form = new DownloadStep3();
+        downloadStep4Form = new DownloadStep4();
 
         mainFramePanel.add(downloadStep1Form.getMainPanel(), DOWNLOAD1CARD);
         mainFramePanel.add(downloadStep2Form.getMainPanel(), DOWNLOAD2CARD);
         mainFramePanel.add(downloadStep3Form.getMainPanel(), DOWNLOAD3CARD);
+        mainFramePanel.add(downloadStep4Form.getMainPanel(), DOWNLOAD4CARD);
 
 
 //        add(mainForm.getMainPanel());
 
+
         setMinimumSize(new Dimension(460, 180));
-        setSize(460,180);
+        setSize(1500,1024);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
         setVisible(true);
@@ -118,5 +134,9 @@ public class MainFrame extends JFrame {
 
     public DownloadStep3 getDownloadStep3Form() {
         return downloadStep3Form;
+    }
+
+    public DownloadStep4 getDownloadStep4Form() {
+        return downloadStep4Form;
     }
 }

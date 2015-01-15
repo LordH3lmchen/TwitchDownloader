@@ -45,12 +45,12 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
                 updateProgressLabel();
             }
         } else if(evt.getPropertyName().equals("videoPart")) {
-            System.out.println("OverallProgPanel: "  + evt.getPropertyName() + " changed from " + evt.getOldValue() + " to " + evt.getNewValue());
+            //System.out.println("OverallProgPanel: "  + evt.getPropertyName() + " changed from " + evt.getOldValue() + " to " + evt.getNewValue());
             if(evt.getOldValue()!=null)
                 partCountProgress++;
             updateProgressLabel();
         } else if(evt.getPropertyName().equals("state")) {
-            System.out.println("OverallProgPanel: "  + evt.getPropertyName() + " changed from " + evt.getOldValue() + " to " + evt.getNewValue());
+            //System.out.println("OverallProgPanel: "  + evt.getPropertyName() + " changed from " + evt.getOldValue() + " to " + evt.getNewValue());
             if(evt.getNewValue().toString().equals("DONE")) {
                 partCountProgress++;
                 updateProgressLabel();
@@ -61,7 +61,7 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
                 }
             }
         } else {
-            System.out.println("OverallProgPanel: "  + evt.getPropertyName() + " changed from " + evt.getOldValue() + " to " + evt.getNewValue());
+            //System.out.println("OverallProgPanel: "  + evt.getPropertyName() + " changed from " + evt.getOldValue() + " to " + evt.getNewValue());
         }
 
     }

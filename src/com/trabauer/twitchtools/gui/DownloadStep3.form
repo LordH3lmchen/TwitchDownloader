@@ -13,14 +13,14 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="82e6c" class="javax.swing.JButton" binding="finishButton" default-binding="true">
+      <component id="82e6c" class="javax.swing.JButton" binding="nextButton">
         <constraints>
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
           <forms defaultalign-horz="false"/>
         </constraints>
         <properties>
           <horizontalAlignment value="0"/>
-          <text value="Finish"/>
+          <text value="Next"/>
         </properties>
       </component>
       <scrollpane id="447e3">

@@ -1,7 +1,5 @@
 package com.trabauer.twitchtools.gui;
 
-import com.trabauer.twitchtools.controller.Controller;
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,7 +9,7 @@ import java.awt.event.ActionListener;
  */
 public class DownloadStep3 implements myGuiForm{
     private JPanel mainPanel;
-    private JButton finishButton;
+    private JButton nextButton;
     private JPanel downloadProgressOverviewPanel;
     private JPanel overallPanel;
 
@@ -19,8 +17,8 @@ public class DownloadStep3 implements myGuiForm{
     public DownloadStep3() {
         super();
         downloadProgressOverviewPanel.setLayout(new BoxLayout(downloadProgressOverviewPanel, BoxLayout.PAGE_AXIS));
-        finishButton.setActionCommand("finishButton");
-        finishButton.addActionListener(new ActionListener() {
+        nextButton.setActionCommand("nextButton3");
+        nextButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
@@ -42,9 +40,9 @@ public class DownloadStep3 implements myGuiForm{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(e.getActionCommand().equals("DONE")) {
-                    finishButton.setEnabled(true);
+                    nextButton.setEnabled(true);
                 } else if (e.getActionCommand().equals("STARTED")) {
-                    finishButton.setEnabled(false);
+                    nextButton.setEnabled(false);
                 }
             }
         });
@@ -53,6 +51,6 @@ public class DownloadStep3 implements myGuiForm{
 
 
     public void addActionListener(ActionListener listener) {
-        finishButton.addActionListener(listener);
+        nextButton.addActionListener(listener);
     }
 }

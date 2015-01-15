@@ -8,6 +8,7 @@ import com.trabauer.twitchtools.model.VideoPart;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -325,8 +326,12 @@ public class TwitchVideo extends Video {
     public void updateTwitchVideoById(String id) {
         InputStream infoIs = null;
         InputStream dlInfoIs = null;
+        InputStream tokenIs = null;
+        InputStream qualityPlaylistIs = null;
+        InputStream playlistIs = null;
         Scanner infoSc = null;
         Scanner dlInfoSc = null;
+        Scanner tokenSc = null;
 
 
         try {
@@ -351,7 +356,6 @@ public class TwitchVideo extends Video {
 
             Gson gson = new Gson();
             BroadCastInfo broadCastInfo = gson.fromJson(infoJsonStr, BroadCastInfo.class);
-            DownloadInfo downloadInfo = gson.fromJson(dlInfoJsonStr, DownloadInfo.class);
             setTitle(broadCastInfo.getTitle());
             setDescription(broadCastInfo.getDescription());
             setBroadcastId(broadCastInfo.getBroadcastId());
@@ -366,11 +370,67 @@ public class TwitchVideo extends Video {
             setChannelDisplayName(broadCastInfo.getChannel().displayName);
 
 
-            for(String key: downloadInfo.getAllParts().keySet()) {
-                int partNumber = 0;
-                for(DownloadInfo.BroadCastPart broadCastPart: downloadInfo.getAllParts().get(key)) {
-                    this.addTwitchVideoPart(key, new TwitchVideoPart(new URL(broadCastPart.url), partNumber++, broadCastPart.length,
-                            new URL(broadCastPart.vodCountUrl), broadCastPart.upkeep));
+            if(Pattern.matches("v\\d+", id)) { // new TwitchVOD System
+                try {
+                String idNr = id.substring(1);
+                URL tokenUrl = new URL("https://api.twitch.tv/api/vods/" + idNr + "/access_token");
+                tokenIs = tokenUrl.openStream();
+                tokenSc = new Scanner(tokenIs);
+                String tokenStr = "";
+                while(tokenSc.hasNextLine()) {
+                    tokenStr += tokenSc.nextLine();
+                }
+                TwitchVodAccessToken twitchVodAccessToken = gson.fromJson(tokenStr, TwitchVodAccessToken.class);
+                URL qualityPlaylistUrl = new URL("http://usher.twitch.tv/vod/" + idNr + "?nauth=" + URLEncoder.encode(twitchVodAccessToken.getToken(), "UTF-8") + "&nauthsig=" + twitchVodAccessToken.getSig());
+                qualityPlaylistIs = qualityPlaylistUrl.openStream();
+                Scanner qualityPlaylistSc = new Scanner(qualityPlaylistIs);
+                while (qualityPlaylistSc.hasNextLine()) {
+                    String line = qualityPlaylistSc.nextLine();
+                    if (!Pattern.matches("^#.*$", line)) { //filter Out comment lines
+                        String quality = line.split("/")[7];
+                        URL playlistUrl = new URL(line);
+                        playlistIs = playlistUrl.openStream();
+                        Scanner playlistSc = new Scanner(playlistIs);
+                        int partNumber = 0;
+                        while (playlistSc.hasNextLine()) {
+                            String partLine = playlistSc.nextLine();
+                            if (partLine.isEmpty())
+                                continue;
+                            if (!Pattern.matches("^#.*$", partLine)) {
+                                partLine = line.replace("index-dvr.m3u8", "").concat(partLine);
+                                this.addTwitchVideoPart(quality, new TwitchVideoPart(new URL(partLine), partNumber++));
+                            }
+                        }
+                    }
+                }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (tokenIs != null)
+                            tokenIs.close();
+                        if (qualityPlaylistIs != null)
+                            qualityPlaylistIs.close();
+                        if (playlistIs != null)
+                            playlistIs.close();
+                    } catch (IOException ioE) {
+                        // ioE.printStackTrace();
+                    }
+                }
+
+
+
+
+
+
+            } else {
+                DownloadInfo downloadInfo = gson.fromJson(dlInfoJsonStr, DownloadInfo.class);
+                for(String key: downloadInfo.getAllParts().keySet()) {
+                    int partNumber = 0;
+                    for(DownloadInfo.BroadCastPart broadCastPart: downloadInfo.getAllParts().get(key)) {
+                        this.addTwitchVideoPart(key, new TwitchVideoPart(new URL(broadCastPart.url), partNumber++, broadCastPart.length,
+                                new URL(broadCastPart.vodCountUrl), broadCastPart.upkeep));
+                    }
                 }
             }
 
@@ -402,6 +462,9 @@ public class TwitchVideo extends Video {
         } else if(Pattern.matches("http://www.twitch.tv/\\w+/c/\\d+", twitchUrl.toString())) {
             String id = twitchUrl.toString().split("/")[5];
             updateTwitchVideoById("c".concat(id));
+        } else if(Pattern.matches("http://www.twitch.tv/\\w+/v/\\d+", twitchUrl.toString())) {
+            String id = twitchUrl.toString().split("/")[5];
+            updateTwitchVideoById("v".concat(id));
         }
     }
 

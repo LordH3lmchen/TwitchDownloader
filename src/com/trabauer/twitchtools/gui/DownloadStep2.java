@@ -122,7 +122,7 @@ public class DownloadStep2 implements Observer, ChangeListener {
             TwitchVideo video = (TwitchVideo) o;
             String quality = video.getBestAvailableQuality();
             int partcount = video.getTwitchVideoParts(quality).size();
-            threadCountSpinnerNumberModel.setMaximum(Math.min(25, partcount));
+            threadCountSpinnerNumberModel.setMaximum(Math.min(10, partcount));
         }
     }
 

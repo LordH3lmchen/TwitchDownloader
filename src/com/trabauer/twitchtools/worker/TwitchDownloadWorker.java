@@ -1,4 +1,4 @@
-package com.trabauer.twitchtools.tasks;
+package com.trabauer.twitchtools.worker;
 
 import com.trabauer.twitchtools.model.twitch.TwitchDownloadQueue;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;
@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Random;
 
 /**
  * This class represents a DownloadTask. It will download all parts of a TwitchVideo.

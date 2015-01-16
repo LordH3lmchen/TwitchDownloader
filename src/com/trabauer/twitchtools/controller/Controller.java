@@ -2,13 +2,14 @@ package com.trabauer.twitchtools.controller;
 
 import com.trabauer.twitchtools.TwitchToolsApp;
 import com.trabauer.twitchtools.gui.*;
+import com.trabauer.twitchtools.gui.vod.download.*;
 import com.trabauer.twitchtools.model.FilenamePatternsComboBoxModel;
 import com.trabauer.twitchtools.model.VideoQualityComboBoxModel;
 import com.trabauer.twitchtools.model.twitch.TwitchDownloadQueue;
 import com.trabauer.twitchtools.model.twitch.TwitchVideo;
-import com.trabauer.twitchtools.tasks.FFMpegConverterWorker;
-import com.trabauer.twitchtools.tasks.HttpFileDownloadWorker;
-import com.trabauer.twitchtools.tasks.TwitchDownloadWorker;
+import com.trabauer.twitchtools.worker.FFMpegConverterWorker;
+import com.trabauer.twitchtools.worker.HttpFileDownloadWorker;
+import com.trabauer.twitchtools.worker.TwitchDownloadWorker;
 import com.trabauer.twitchtools.utils.OsUtils;
 import com.trabauer.twitchtools.utils.StreamCapturer;
 
@@ -34,7 +35,7 @@ public class Controller implements ActionListener , Observer, NodeChangeListener
 
     private TwitchVideo twitchVideo = null;
     private File destinationDirectory;
-    private MainFrame mainFrame;
+    private OldMainFrame mainFrame;
     private FilenamePatternsComboBoxModel filenamePatternsComboBoxModel;
     private VideoQualityComboBoxModel videoQualityComboBoxModel;
     private DownloadStep1 downloadStep1;
@@ -53,7 +54,7 @@ public class Controller implements ActionListener , Observer, NodeChangeListener
     public Controller() {
         super();
         this.destinationDirectory = null;
-        this.mainFrame = new MainFrame();
+        this.mainFrame = new OldMainFrame();
         mainFrame.setSize(700, 550);
         this.twitchVideo = new TwitchVideo();
         ffmpegExecutable = null;

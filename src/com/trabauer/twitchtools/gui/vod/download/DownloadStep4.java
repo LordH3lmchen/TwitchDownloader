@@ -1,6 +1,7 @@
-package com.trabauer.twitchtools.gui;
+package com.trabauer.twitchtools.gui.vod.download;
 
-import com.trabauer.twitchtools.tasks.HttpFileDownloadWorker;
+import com.trabauer.twitchtools.gui.myGuiForm;
+import com.trabauer.twitchtools.worker.HttpFileDownloadWorker;
 import com.trabauer.twitchtools.utils.Consumer;
 
 import javax.swing.*;

@@ -1,4 +1,4 @@
-package com.trabauer.twitchtools.gui;
+package com.trabauer.twitchtools.gui.vod.download;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

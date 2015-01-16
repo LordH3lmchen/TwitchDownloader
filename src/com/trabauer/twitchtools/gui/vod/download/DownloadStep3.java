@@ -1,4 +1,6 @@
-package com.trabauer.twitchtools.gui;
+package com.trabauer.twitchtools.gui.vod.download;
+
+import com.trabauer.twitchtools.gui.myGuiForm;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -7,7 +9,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by Flo on 16.11.2014.
  */
-public class DownloadStep3 implements myGuiForm{
+public class DownloadStep3 implements myGuiForm {
     private JPanel mainPanel;
     private JButton nextButton;
     private JPanel downloadProgressOverviewPanel;

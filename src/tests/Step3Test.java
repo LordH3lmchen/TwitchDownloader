@@ -1,7 +1,7 @@
 package tests;
 
-import com.trabauer.twitchtools.tasks.TwitchDownloadWorker;
-import com.trabauer.twitchtools.gui.DownloadProgressPanel;
+import com.trabauer.twitchtools.worker.TwitchDownloadWorker;
+import com.trabauer.twitchtools.gui.vod.download.DownloadProgressPanel;
 import com.trabauer.twitchtools.model.twitch.TwitchDownloadQueue;
 import com.trabauer.twitchtools.model.twitch.TwitchVideo;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;

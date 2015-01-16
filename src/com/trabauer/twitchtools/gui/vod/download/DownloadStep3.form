@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.trabauer.twitchtools.gui.DownloadStep3">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.trabauer.twitchtools.gui.vod.download.DownloadStep3">
   <grid id="27dc6" binding="mainPanel" layout-manager="FormLayout">
     <rowspec value="center:d:grow"/>
     <rowspec value="top:4dlu:noGrow"/>

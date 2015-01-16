@@ -1,4 +1,4 @@
-package com.trabauer.twitchtools.tasks;
+package com.trabauer.twitchtools.worker;
 
 import javax.swing.*;
 import java.io.File;
@@ -14,6 +14,9 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
         this.destinationVideoFile = destinationVideoFile;
         this.fileListForFfmpeg = fileListForFfmpeg;
         this.ffmpegExecutable = ffmpegExecutable;
+
+
+
 
     }
 

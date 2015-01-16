@@ -1,4 +1,4 @@
-package com.trabauer.twitchtools.tasks;
+package com.trabauer.twitchtools.worker;
 
 import javax.swing.*;
 import java.io.File;

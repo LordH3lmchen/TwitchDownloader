@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.trabauer.twitchtools.gui.vod.download.DownloadStep3">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.trabauer.twitchtools.gui.vod.download.DownloadStep3Form">
   <grid id="27dc6" binding="mainPanel" layout-manager="FormLayout">
     <rowspec value="center:d:grow"/>
     <rowspec value="top:4dlu:noGrow"/>
-    <rowspec value="center:max(d;4px):noGrow"/>
-    <rowspec value="top:5dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
     <colspec value="fill:d:grow"/>
     <constraints>
@@ -13,16 +11,6 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="82e6c" class="javax.swing.JButton" binding="nextButton">
-        <constraints>
-          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-          <forms defaultalign-horz="false"/>
-        </constraints>
-        <properties>
-          <horizontalAlignment value="0"/>
-          <text value="Next"/>
-        </properties>
-      </component>
       <scrollpane id="447e3">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>

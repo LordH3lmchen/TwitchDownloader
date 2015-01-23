@@ -2,6 +2,10 @@ package com.trabauer.twitchtools.model.twitch;
 
 import com.google.gson.annotations.SerializedName;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
@@ -16,7 +20,7 @@ import java.util.GregorianCalendar;
  * Sie enthaelt Informationen zum PastBroadcast allerdings keine Informationen zu den VideoFiles auf den Twitch Servern
  *
  */
-public class BroadCastInfo {
+public class TwitchVideoInfo {
     private String title;
     private String description;
     @SerializedName("broadcast_id")
@@ -39,7 +43,10 @@ public class BroadCastInfo {
     @SerializedName("channel")
     private Channel channel;
 
-    public BroadCastInfo() {
+    private Image image;
+    private DownloadInfo dlInfo;
+
+    public TwitchVideoInfo() {
     }
 
     class Links {
@@ -96,7 +103,7 @@ public class BroadCastInfo {
         return length;
     }
 
-    public URL getPreview() throws MalformedURLException {
+    public URL getPreviewUrl() throws MalformedURLException {
         return new URL(preview);
     }
 
@@ -115,4 +122,41 @@ public class BroadCastInfo {
     public Channel getChannel() {
         return channel;
     }
+
+    public String getChanneDisplaylName() {
+        return channel.displayName;
+    }
+
+    public String getChanelName() {
+        return channel.name;
+    }
+
+    public DownloadInfo getDlInfo() { //TODO implement lazy instantiation
+        if(this.dlInfo==null) {
+            this.dlInfo = new DownloadInfo(this);
+        }
+        return dlInfo;
+    }
+
+    @Override
+    public String toString() {
+        return "TwitchVideoInfo{" +
+                "title='" + title + '\'' +
+                '}';
+    }
+
+    public Image getPreviewImage() throws MalformedURLException, IOException {
+        if (image == null) {
+            InputStream is = getPreviewUrl().openStream();
+            Image image = ImageIO.read(is);
+            return image;
+        } else {
+            return this.image;
+        }
+    }
+
+
+
+
+
 }

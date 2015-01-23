@@ -1,9 +1,9 @@
 package com.trabauer.twitchtools.gui;
 
-import com.trabauer.twitchtools.gui.vod.download.DownloadStep1;
-import com.trabauer.twitchtools.gui.vod.download.DownloadStep2;
-import com.trabauer.twitchtools.gui.vod.download.DownloadStep3;
-import com.trabauer.twitchtools.gui.vod.download.DownloadStep4;
+import com.trabauer.twitchtools.gui.vod.download.DownloadStep1Form;
+import com.trabauer.twitchtools.gui.vod.download.DownloadStep2Form;
+import com.trabauer.twitchtools.gui.vod.download.DownloadStep3Form;
+import com.trabauer.twitchtools.gui.vod.download.DownloadStep4Form;
 import com.trabauer.twitchtools.utils.OsUtils;
 
 import javax.imageio.ImageIO;
@@ -17,15 +17,15 @@ import java.io.IOException;
  */
 public class OldMainFrame extends JFrame {
 
-    private DownloadStep1 downloadStep1Form;
-    private DownloadStep2 downloadStep2Form;
-    private DownloadStep3 downloadStep3Form;
-    private DownloadStep4 downloadStep4Form;
+    private DownloadStep1Form downloadStep1Form;
+    private DownloadStep2Form downloadStep2Form;
+    private DownloadStep3Form downloadStep3Form;
+    private DownloadStep4Form downloadStep4Form;
 
-    public final String DOWNLOAD1CARD = "DownloadStep1";
-    public final String DOWNLOAD2CARD = "DownloadStep2";
-    public final String DOWNLOAD3CARD = "DownloadStep3";
-    public final String DOWNLOAD4CARD = "DownloadStep4";
+    public final String DOWNLOAD1CARD = "DownloadStep1Form";
+    public final String DOWNLOAD2CARD = "DownloadStep2Form";
+    public final String DOWNLOAD3CARD = "DownloadStep3Form";
+    public final String DOWNLOAD4CARD = "DownloadStep4Form";
 
 
     private JPanel mainFramePanel;
@@ -55,10 +55,10 @@ public class OldMainFrame extends JFrame {
         }
         setIconImage(icon);
 
-        downloadStep1Form = new DownloadStep1(icon);
-        downloadStep2Form = new DownloadStep2();
-        downloadStep3Form = new DownloadStep3();
-        downloadStep4Form = new DownloadStep4();
+        downloadStep1Form = new DownloadStep1Form(icon);
+        downloadStep2Form = new DownloadStep2Form();
+        downloadStep3Form = new DownloadStep3Form();
+        downloadStep4Form = new DownloadStep4Form();
 
         mainFramePanel.add(downloadStep1Form.getMainPanel(), DOWNLOAD1CARD);
         mainFramePanel.add(downloadStep2Form.getMainPanel(), DOWNLOAD2CARD);
@@ -120,19 +120,19 @@ public class OldMainFrame extends JFrame {
         return file;
     }
 
-    public DownloadStep1 getDownloadStep1Form() {
+    public DownloadStep1Form getDownloadStep1Form() {
         return downloadStep1Form;
     }
 
-    public DownloadStep2 getDownloadStep2Form() {
+    public DownloadStep2Form getDownloadStep2Form() {
         return downloadStep2Form;
     }
 
-    public DownloadStep3 getDownloadStep3Form() {
+    public DownloadStep3Form getDownloadStep3Form() {
         return downloadStep3Form;
     }
 
-    public DownloadStep4 getDownloadStep4Form() {
+    public DownloadStep4Form getDownloadStep4Form() {
         return downloadStep4Form;
     }
 }

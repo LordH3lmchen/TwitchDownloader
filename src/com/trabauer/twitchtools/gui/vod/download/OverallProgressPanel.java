@@ -93,7 +93,7 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
     }
 
     public void notifyState() {
-        notifyActionListeners(new ActionEvent(this, 0, this.state));
+        notifyActionListeners(new ActionEvent(this, 0, state));
     }
 
     public void reset() {

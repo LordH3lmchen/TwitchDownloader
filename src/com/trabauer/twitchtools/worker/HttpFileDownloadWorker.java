@@ -27,6 +27,8 @@ public class HttpFileDownloadWorker extends SwingWorker <Void, Void>{
         URLConnection urlConnection = null;
         InputStream sourceInputStream = null;
         FileOutputStream fos = null;
+        String outputline = "Downloading " + sourceUrl.getPath() + "\n";
+        firePropertyChange("outputline", null, outputline);
         try{
             urlConnection = sourceUrl.openConnection();
             int filesize = urlConnection.getContentLength();
@@ -42,7 +44,9 @@ public class HttpFileDownloadWorker extends SwingWorker <Void, Void>{
                 done+=len;
                 float percent = (done*100)/filesize;
                 setProgress((int)percent);
+                firePropertyChange("outputline", outputline, outputline=String.format("%3d%% \n", (int)percent));
             }
+            firePropertyChange("outpuline", outputline, outputline = "Download finished\n");
             setProgress(100);
         } catch (IOException e) {
             e.printStackTrace();

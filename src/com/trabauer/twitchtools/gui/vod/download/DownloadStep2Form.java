@@ -1,6 +1,6 @@
 package com.trabauer.twitchtools.gui.vod.download;
 
-import com.trabauer.twitchtools.controller.Controller;
+import com.trabauer.twitchtools.controller.DownloadController;
 import com.trabauer.twitchtools.model.FilenamePatternsComboBoxModel;
 import com.trabauer.twitchtools.model.VideoQualityComboBoxModel;
 import com.trabauer.twitchtools.model.twitch.TwitchVideo;
@@ -10,6 +10,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
@@ -17,14 +18,12 @@ import java.util.Observer;
 /**
  * Created by Flo on 16.11.2014.
  */
-public class DownloadStep2 implements Observer, ChangeListener {
+public class DownloadStep2Form implements Observer, ChangeListener {
     private JPanel mainPanel;
     private JTextField destFolderTextField;
     private JComboBox filenameComboBox;
     private JLabel fileNamePreviewLabel;
-    private JButton nextButton;
     private JButton selectDestinationFolderButton;
-    private JButton backButton;
     private JComboBox qualityComboBox;
     private JSpinner downloadThreadsSpinner;
     private JLabel bandWithUsageJLabel;
@@ -35,13 +34,13 @@ public class DownloadStep2 implements Observer, ChangeListener {
     private ArrayList<ActionListener> actionListeners;
 
 
-    public DownloadStep2() {
+    public DownloadStep2Form() {
         super();
         this.actionListeners = new ArrayList<ActionListener>();
 
 
-        nextButton.setActionCommand("nextButton2");
-        backButton.setActionCommand("backButton2");
+        //nextButton.setActionCommand("nextButton2");
+        //backButton.setActionCommand("backButton2");
         selectDestinationFolderButton.setActionCommand("selectDestDirBtnPressed");
         filenameComboBox.setActionCommand("filenameChanged");
         qualityComboBox.setActionCommand("qualityChanged");
@@ -73,17 +72,17 @@ public class DownloadStep2 implements Observer, ChangeListener {
         destFolderTextField.setText(s);
     }
 
-    public String getDestinationFolder() {
-        return destFolderTextField.getText();
+    public File getDestinationFolder() {
+        return new File(destFolderTextField.getText());
     }
 
-    public void addActionListener(Controller controller) {
-        this.actionListeners.add(controller);
-        nextButton.addActionListener(controller);
-        backButton.addActionListener(controller);
-        selectDestinationFolderButton.addActionListener(controller);
-        filenameComboBox.addActionListener(controller);
-        qualityComboBox.addActionListener(controller);
+    public void addActionListener(ActionListener actionListener) {
+        this.actionListeners.add(actionListener);
+        //nextButton.addPropertyChangeListener(actionListener);
+        //backButton.addPropertyChangeListener(actionListener);
+        selectDestinationFolderButton.addActionListener(actionListener);
+        filenameComboBox.addActionListener(actionListener);
+        qualityComboBox.addActionListener(actionListener);
     }
 
 

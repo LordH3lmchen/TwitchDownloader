@@ -3,7 +3,9 @@
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/../javaLibs/gson-2.3.jar!/" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="http://google-gson.googlecode.com/svn/trunk/gson/docs/javadocs/" />
+    </JAVADOC>
     <SOURCES />
   </library>
 </component>

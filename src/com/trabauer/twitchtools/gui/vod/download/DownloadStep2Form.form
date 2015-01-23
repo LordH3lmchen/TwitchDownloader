@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.trabauer.twitchtools.gui.vod.download.DownloadStep2">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.trabauer.twitchtools.gui.vod.download.DownloadStep2Form">
   <grid id="27dc6" binding="mainPanel" layout-manager="FormLayout">
     <rowspec value="center:max(d;4px):noGrow"/>
     <rowspec value="top:4dlu:noGrow"/>
@@ -10,8 +10,6 @@
     <rowspec value="center:max(d;4px):noGrow"/>
     <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
-    <rowspec value="top:4dlu:noGrow"/>
-    <rowspec value="bottom:max(m;4px):grow"/>
     <colspec value="right:d:noGrow"/>
     <colspec value="left:4dlu:noGrow"/>
     <colspec value="fill:d:grow"/>
@@ -102,28 +100,6 @@
           <editable value="true"/>
         </properties>
       </component>
-      <grid id="825c2" layout-manager="FlowLayout" hgap="0" vgap="0" flow-align="2">
-        <constraints>
-          <grid row="10" column="0" row-span="1" col-span="7" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-          <forms/>
-        </constraints>
-        <properties/>
-        <border type="none"/>
-        <children>
-          <component id="7173" class="javax.swing.JButton" binding="backButton" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="&lt; Back"/>
-            </properties>
-          </component>
-          <component id="495c2" class="javax.swing.JButton" binding="nextButton" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="Next &gt;"/>
-            </properties>
-          </component>
-        </children>
-      </grid>
       <component id="b1afa" class="javax.swing.JLabel">
         <constraints>
           <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>

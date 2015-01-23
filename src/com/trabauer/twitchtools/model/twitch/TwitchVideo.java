@@ -1,9 +1,7 @@
 package com.trabauer.twitchtools.model.twitch;
 
 import com.google.gson.Gson;
-import com.trabauer.twitchtools.TwitchToolsApp;
 import com.trabauer.twitchtools.model.Video;
-import com.trabauer.twitchtools.model.VideoPart;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -355,19 +353,19 @@ public class TwitchVideo extends Video {
             }
 
             Gson gson = new Gson();
-            BroadCastInfo broadCastInfo = gson.fromJson(infoJsonStr, BroadCastInfo.class);
-            setTitle(broadCastInfo.getTitle());
-            setDescription(broadCastInfo.getDescription());
-            setBroadcastId(broadCastInfo.getBroadcastId());
-            setTagList(broadCastInfo.getTagList());
-            setId(broadCastInfo.getId());
-            setRecordedAt(broadCastInfo.getRecordedAt());
-            setGame(broadCastInfo.getGame());
-            setLength(broadCastInfo.getLength());
-            setPreview(broadCastInfo.getPreview());
-            setUrl(broadCastInfo.getUrl());
-            setChannelName(broadCastInfo.getChannel().name);
-            setChannelDisplayName(broadCastInfo.getChannel().displayName);
+            TwitchVideoInfo twitchVideoInfo = gson.fromJson(infoJsonStr, TwitchVideoInfo.class);
+            setTitle(twitchVideoInfo.getTitle());
+            setDescription(twitchVideoInfo.getDescription());
+            setBroadcastId(twitchVideoInfo.getBroadcastId());
+            setTagList(twitchVideoInfo.getTagList());
+            setId(twitchVideoInfo.getId());
+            setRecordedAt(twitchVideoInfo.getRecordedAt());
+            setGame(twitchVideoInfo.getGame());
+            setLength(twitchVideoInfo.getLength());
+            setPreview(twitchVideoInfo.getPreviewUrl());
+            setUrl(twitchVideoInfo.getUrl());
+            setChannelName(twitchVideoInfo.getChannel().name);
+            setChannelDisplayName(twitchVideoInfo.getChannel().displayName);
 
 
             if(Pattern.matches("v\\d+", id)) { // new TwitchVOD System
@@ -417,12 +415,6 @@ public class TwitchVideo extends Video {
                         // ioE.printStackTrace();
                     }
                 }
-
-
-
-
-
-
             } else {
                 DownloadInfo downloadInfo = gson.fromJson(dlInfoJsonStr, DownloadInfo.class);
                 for(String key: downloadInfo.getAllParts().keySet()) {

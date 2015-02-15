@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 /**
@@ -22,19 +23,30 @@ import java.util.ArrayList;
 public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeListener, ActionListener {
 
 
+    // Controller
+    private final ChannelSyncControllerInterface controller;
 
+    // Models
+    private final TwitchVideoInfoList twitchVideoInfoList;
+
+    // localStuff
+    private ArrayList<JPanel> searchResultItemPanels; //List to manage ResultPanelItems
+
+    // GUI Components
     private final JLabel channelInputLabel;
     private final JPanel channelInputPanel;
     private final JTextField channelInputFld;
     private final JButton channelInputBtn;
     private final JScrollPane searchResultScrollPane;
     private final JPanel searchResultPanel;
-
-    private final ChannelSyncControllerInterface controller;
-    private final TwitchVideoInfoList twitchVideoInfoList;
     private final JButton loadMoreBtn;
+    private final JPanel bottomPanel;
+    private final JButton downloadAllBtn;
+    private final JButton selectMostRecentBtn;
+    private final JSpinner recentDaysSpinner;
+    private final JLabel daysLabel;
 
-    private ArrayList<JPanel> searchResultItemPanels;
+
 
     public static void main(String[] args) {
         // Set look & feel
@@ -56,14 +68,21 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
 //              DownloadController downloadController = new DownloadController();
 //                MainController mainController = MainController.getInstance();
 
-                JFrame mainFrame = new JFrame("SyncChannelTest");
+                final JFrame mainFrame = new JFrame("SyncChannelTest");
                 TwitchVideoInfoList twitchVideoInfoList = new TwitchVideoInfoList(); //model
-                ChannelSyncController controller = new ChannelSyncController(twitchVideoInfoList); //Controller
+                ChannelSyncController controller = new ChannelSyncController(); //Controller
 
                 mainFrame.setContentPane(controller.getMainPanel()); //get the view from controller
 
                 mainFrame.pack();
-                mainFrame.setSize(1280, 1024);
+                mainFrame.setSize(1080, 700);
+//                mainFrame.addComponentListener(new ComponentAdapter() {
+//                    @Override
+//                    public void componentResized(ComponentEvent e) {
+//                        System.out.println("MainFrameSiz=" + mainFrame.getSize());
+//
+//                    }
+//                });
                 mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 mainFrame.setVisible(true);
             }
@@ -88,9 +107,20 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
         channelInputBtn = new JButton("Get VOD's");
         channelInputBtn.addActionListener(this);
         channelInputFld.addActionListener(this);
-
+        bottomPanel = new JPanel();
+        downloadAllBtn = new JButton("Download All");
+        downloadAllBtn.addActionListener(this);
         loadMoreBtn = new JButton("load more ... ");
         loadMoreBtn.addActionListener(this);
+        selectMostRecentBtn = new JButton("Select most Recent");
+//        selectMostRecentBtn.setEnabled(false);
+        selectMostRecentBtn.addActionListener(this);
+
+        recentDaysSpinner = new JSpinner(new SpinnerNumberModel(30, 1, 365, 1));
+        daysLabel = new JLabel("day's");
+
+
+
 
         searchResultPanel = new JPanel(new WrapLayout(FlowLayout.LEFT, 10, 10));
 
@@ -130,6 +160,29 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
 
         add(searchResultScrollPane, BorderLayout.CENTER);
 
+        bottomPanel.setLayout(new GridBagLayout());
+        add(bottomPanel, BorderLayout.PAGE_END);
+
+        c.gridx=0;
+        c.gridy=0;
+        c.weightx=0.0;
+        c.weighty=0.0;
+        c.anchor=GridBagConstraints.LINE_START;
+        bottomPanel.add(selectMostRecentBtn, c);
+
+        c.gridx=1;
+        bottomPanel.add(recentDaysSpinner, c);
+
+        c.anchor=GridBagConstraints.LINE_END;
+        c.gridx=3;
+        bottomPanel.add(downloadAllBtn, c);
+
+        c.gridx=2;
+        c.weightx=1.0;
+        c.fill=GridBagConstraints.HORIZONTAL;
+        bottomPanel.add(daysLabel, c);
+
+
 
 //        searchResultPanel.setBackground(Color.yellow);
 //        add(searchResultPanel, BorderLayout.CENTER);
@@ -160,11 +213,10 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
             this.searchResultItemPanels = new ArrayList<JPanel>();
         }
         for(TwitchVideoInfo twitchVideoInfo: twitchVideoInfoList.getTwitchVideoInfos()) {
-            VideoInfoPanel videoInfoPanel = null; //
+            VideoInfoPanel videoInfoPanel = null;
             try {
                 videoInfoPanel = new VideoInfoPanel(twitchVideoInfo, controller);
             } catch (IOException e) {
-
                 e.printStackTrace();
             }
             searchResultPanel.add(videoInfoPanel);
@@ -201,10 +253,27 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if( e.getSource()==channelInputBtn || e.getSource()==channelInputFld) {
-            controller.searchFldText(channelInputFld.getText());
-        } else if(e.getSource()==loadMoreBtn) {
+
+        if (e.getSource() == channelInputBtn || e.getSource() == channelInputFld) {
+            try {
+                controller.searchFldText(channelInputFld.getText());
+            } catch (MalformedURLException e1) {
+                JOptionPane.showMessageDialog(this, "Weird Channel Input " + channelInputFld.getText() + " isn't a valid channel name", "Invalid channel namen", JOptionPane.ERROR_MESSAGE);
+                e1.printStackTrace();
+            } catch (IOException ioe) {
+                JOptionPane.showMessageDialog(this, "Channel not found!", "Channel not found", JOptionPane.ERROR_MESSAGE);
+            }
+        } else if (e.getSource() == loadMoreBtn) {
             controller.loadMoreSearchResults();
+        } else if (e.getSource() == selectMostRecentBtn) {
+            controller.selectMostRecent((Integer)recentDaysSpinner.getValue());
+        } else if (e.getSource() == downloadAllBtn) {
+            controller.downloadAllSelectedTwitchVideos();
         }
+
+    }
+
+    public void downloadAllBtnSetEnabled(boolean x) {
+        downloadAllBtn.setEnabled(x);
     }
 }

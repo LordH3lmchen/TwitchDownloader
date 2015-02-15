@@ -3,7 +3,7 @@ package com.trabauer.twitchtools.gui.vod.download;
 import com.trabauer.twitchtools.controller.DownloadController;
 import com.trabauer.twitchtools.model.FilenamePatternsComboBoxModel;
 import com.trabauer.twitchtools.model.VideoQualityComboBoxModel;
-import com.trabauer.twitchtools.model.twitch.TwitchVideo;
+import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -11,6 +11,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
@@ -117,11 +118,16 @@ public class DownloadStep2Form implements Observer, ChangeListener {
 
     @Override
     public void update(Observable o, Object arg) {
-        if(o.getClass().equals(TwitchVideo.class)) {
-            TwitchVideo video = (TwitchVideo) o;
-            String quality = video.getBestAvailableQuality();
-            int partcount = video.getTwitchVideoParts(quality).size();
-            threadCountSpinnerNumberModel.setMaximum(Math.min(10, partcount));
+        if(o.getClass().equals(TwitchVideoInfo.class)) {
+            TwitchVideoInfo video = (TwitchVideoInfo) o;
+            String quality = null;
+            try {
+                quality = video.getDownloadInfo().getBestAvailableQuality();
+                int partCount = video.getDownloadInfo().getTwitchBroadcastParts(quality).size();
+                threadCountSpinnerNumberModel.setMaximum(Math.min(10, partCount));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

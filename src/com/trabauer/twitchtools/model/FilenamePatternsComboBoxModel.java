@@ -1,6 +1,6 @@
 package com.trabauer.twitchtools.model;
 
-import com.trabauer.twitchtools.model.twitch.TwitchVideo;
+import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
@@ -84,7 +84,7 @@ public class FilenamePatternsComboBoxModel implements MutableComboBoxModel<Strin
     @Override
     public void update(Observable o, Object arg) {
         //STUB
-        if(o.getClass().equals(TwitchVideo.class)) { //Observed TwichVideo changed update Observers
+        if(o.getClass().equals(TwitchVideoInfo.class)) { //Observed TwichVideo changed update Observers
             //TwitchVideo twitchVideo = (TwitchVideo)o;
             //this.filenamePatterns = new ArrayList<String>();
         }

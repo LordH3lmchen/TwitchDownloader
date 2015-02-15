@@ -1,7 +1,7 @@
 package com.trabauer.twitchtools;
 
-import com.trabauer.twitchtools.model.VideoPart;
-import com.trabauer.twitchtools.model.twitch.TwitchVideo;
+import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;
+import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,9 +17,9 @@ public class TwitchToolsCmdApp {
 
     private static final String destinationDir = "D:\\twitchStreams";
 
-    public static void main(String[] argv) {
+    public static void main(String[] argv) throws IOException {
 
-        TwitchVideo video = new TwitchVideo();
+        TwitchVideoInfo video = new TwitchVideoInfo();
         URL twitchUrl = null;
         String quality = null;
 
@@ -43,35 +43,43 @@ public class TwitchToolsCmdApp {
             System.exit(0);
         }
 
-        video.updateTwitchVideoByUrl(twitchUrl);
+        try {
+            video.update(twitchUrl);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Downloading " + video.getTitle());
 
 
 
 
         System.out.println("Available Qualities:");
-        for(String qual: video.getAvailableQualities()) {
+        for(String qual: video.getDownloadInfo().getAvailableQualities()) {
             System.out.println("\t" + qual);
         }
 
 //        String filename = video.getGame() + "\\" + video.getChannelName() + "\\" + video.getTitle();
         String filename = "WCS_Test_2014";
-        downloadBroadcast(video ,quality, destinationDir, filename);
+        try {
+            downloadBroadcast(video ,quality, destinationDir, filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
     }
 
-    private static void downloadBroadcast(TwitchVideo video, String quality, String destinationDir, String filename) {
+    private static void downloadBroadcast(TwitchVideoInfo video, String quality, String destinationDir, String filename) throws IOException {
         if(quality == null)
-            quality = video.getBestAvailableQuality();
+            quality = video.getDownloadInfo().getBestAvailableQuality();
         int partNr = 0;
-        for(VideoPart videoPart: video.getVideoParts(quality)) {
-            downloadPart(videoPart, destinationDir + "\\" + filename + "_" + quality + String.format("_%03d", partNr++), partNr, video.getVideoParts(quality).size());
+        for(TwitchVideoPart videoPart: video.getDownloadInfo().getTwitchBroadcastParts(quality)) {
+            downloadPart(videoPart, destinationDir + "\\" + filename + "_" + quality + String.format("_%03d", partNr++), partNr, video.getDownloadInfo().getTwitchBroadcastParts(quality).size());
         }
     }
 
-    private static void downloadPart(VideoPart videoPart, String filename, int partNumber, int partCount) {
-        URL url = videoPart.getUrl();
+    private static void downloadPart(TwitchVideoPart videoPart, String filename, int partNumber, int partCount) throws MalformedURLException {
+        URL url = new URL(videoPart.getUrl());
         InputStream is = null;
         FileOutputStream fos = null;
         String fileExt = "";

@@ -2,10 +2,9 @@ package com.trabauer.twitchtools.controller;
 
 import com.trabauer.twitchtools.TwitchToolsApp;
 import com.trabauer.twitchtools.gui.vod.download.*;
-import com.trabauer.twitchtools.model.FilenamePatternsComboBoxModel;
-import com.trabauer.twitchtools.model.VideoQualityComboBoxModel;
-import com.trabauer.twitchtools.model.twitch.TwitchDownloadQueue;
-import com.trabauer.twitchtools.model.twitch.TwitchVideo;
+import com.trabauer.twitchtools.model.*;
+import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;
+import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 import com.trabauer.twitchtools.utils.GuiPropertyChangeValue;
 import com.trabauer.twitchtools.utils.OsValidator;
 import com.trabauer.twitchtools.utils.TwitchToolPreferences;
@@ -35,7 +34,7 @@ public class DownloadController implements ActionListener , Observer, NodeChange
 
     public static final String FFMPEG_EXE_URL_STR = "http://trabauer.com/downloads/project_ressources/TwitchTools/ffmpeg.exe";
 
-    private TwitchVideo twitchVideo = null;
+    private TwitchVideoInfo twitchVideo = null;
     private FilenamePatternsComboBoxModel filenamePatternsComboBoxModel;
     private VideoQualityComboBoxModel videoQualityComboBoxModel;
 
@@ -47,9 +46,9 @@ public class DownloadController implements ActionListener , Observer, NodeChange
     private DownloadControllerGuiInterface linkedGUI;
 
 
-    public DownloadController(DownloadControllerGuiInterface linkedGUI) {
+    public DownloadController(DownloadControllerGuiInterface linkedGUI) throws IOException {
         super();
-        this.twitchVideo = new TwitchVideo();
+        this.twitchVideo = new TwitchVideoInfo();
         this.linkedGUI = linkedGUI;
 
         ffmpegExecutable = null;
@@ -88,11 +87,11 @@ public class DownloadController implements ActionListener , Observer, NodeChange
 
     }
 
-    public void selectVideo(URL twitchUrl) {
-        this.twitchVideo.updateTwitchVideoByUrl(twitchUrl);
+    public void selectVideo(URL twitchUrl) throws IOException {
+        this.twitchVideo.update(twitchUrl);
     }
 
-    public TwitchVideo getSelectedTwitchVideo() {
+    public TwitchVideoInfo getSelectedTwitchVideo() {
         return twitchVideo;
     }
 
@@ -153,12 +152,16 @@ public class DownloadController implements ActionListener , Observer, NodeChange
 
 
 
-    private void downloadPastBroadcast(String filename, File destinationDirectory, String quality, int threadcount, TwitchVideo twitchVideo) {
+    private void downloadPastBroadcast(String filename, File destinationDirectory, String quality, int threadcount, TwitchVideoInfo twitchVideo) throws IOException {
         String filePath = destinationDirectory.getAbsolutePath() + "/" + filename;
         File destinationFileTemplate = new File(filePath);
-        TwitchDownloadQueue twitchDownloadQueue = new TwitchDownloadQueue(twitchVideo.getTwitchVideoParts(quality));
-        String prefixLabelText = new String().format("%2d / %2d", twitchDownloadQueue.peekNextVideoPart().getPartNumber()+1, twitchDownloadQueue.getInitialSize());
-        OverallProgressPanel overallProgressPanel = new OverallProgressPanel(twitchDownloadQueue.getInitialSize());
+
+        ArrayList<TwitchVideoPart> broadcastParts = twitchVideo.getDownloadInfo().getTwitchBroadcastParts(quality);
+        WorkerQueue<TwitchVideoPart> twitchDownloadWorkerQueue = new WorkerQueue<TwitchVideoPart>(broadcastParts);
+        int partNumber = broadcastParts.indexOf(twitchDownloadWorkerQueue.peek())+1;
+        String prefixLabelText = new String().format("%2d / %2d", partNumber+1, twitchDownloadWorkerQueue.getInitialSize());
+
+        OverallProgressPanel overallProgressPanel = new OverallProgressPanel(twitchDownloadWorkerQueue.getInitialSize());
         overallProgressPanel.addActionListener(this);
         linkedGUI.addOverallProgressPanel(overallProgressPanel);
 
@@ -167,13 +170,13 @@ public class DownloadController implements ActionListener , Observer, NodeChange
             destinationFolder.mkdirs();
         }
 
-        this.m3uPlaylist = createM3uPlaylist(destinationFileTemplate, twitchDownloadQueue);
-        this.ffmpegFilelist = createFFMpegFilelist(destinationFileTemplate, twitchDownloadQueue);
+        this.m3uPlaylist = createM3uPlaylist(destinationFileTemplate, twitchDownloadWorkerQueue);
+        this.ffmpegFilelist = createFFMpegFilelist(destinationFileTemplate, twitchDownloadWorkerQueue);
 
         for(int i=0; i<threadcount; i++){
-            TwitchDownloadWorker twitchDownloadWorker = new TwitchDownloadWorker(destinationFileTemplate, twitchDownloadQueue);
+            TwitchDownloadWorker twitchDownloadWorker = new TwitchDownloadWorker(destinationFileTemplate, twitchDownloadWorkerQueue);
             DownloadProgressPanel downloadProgressPanel = new DownloadProgressPanel(prefixLabelText, "  0 %");
-            downloadProgressPanel.setPartsToDownloadCount(twitchDownloadQueue.getInitialSize());
+            downloadProgressPanel.setPartsToDownloadCount(twitchDownloadWorkerQueue.getInitialSize());
             twitchDownloadWorker.addPropertyChangeListener(downloadProgressPanel);
             twitchDownloadWorker.addPropertyChangeListener(overallProgressPanel);
             linkedGUI.addDownloadProgressPanel(downloadProgressPanel);
@@ -182,20 +185,20 @@ public class DownloadController implements ActionListener , Observer, NodeChange
 
     }
 
-    private File createM3uPlaylist(File fileTemplate, TwitchDownloadQueue twitchDownloadQueue) {
-        return createFileList("", "", fileTemplate, twitchDownloadQueue, ".m3u");
+    private File createM3uPlaylist(File fileTemplate, WorkerQueue<TwitchVideoPart> twitchDownloadWorkerQueue) {
+        return createFileList("", "", fileTemplate, twitchDownloadWorkerQueue, ".m3u");
     }
 
-    private File createFFMpegFilelist(File fileTemplate, TwitchDownloadQueue twitchDownloadQueue) {
-        return createFileList("file '", "'", fileTemplate, twitchDownloadQueue, ".ffmpegfilelist");
+    private File createFFMpegFilelist(File fileTemplate, WorkerQueue<TwitchVideoPart> twitchDownloadWorkerQueue) {
+        return createFileList("file '", "'", fileTemplate, twitchDownloadWorkerQueue, ".ffmpegfilelist");
     }
 
-    private File createFileList(String prefix, String postfix, File fileTemplate, TwitchDownloadQueue twitchDownloadQueue, String listFileExtension) {
+    private File createFileList(String prefix, String postfix, File fileTemplate, WorkerQueue<TwitchVideoPart> twitchDownloadWorkerQueue, String listFileExtension) {
         File filelistFile = new File(fileTemplate + listFileExtension);
-        int partCount = twitchDownloadQueue.getInitialSize();
+        int partCount = twitchDownloadWorkerQueue.getInitialSize();
         String fileExtension = "";
-        int i = twitchDownloadQueue.peekNextVideoPart().getUrl().getFile().lastIndexOf('.');
-        if(i>0) fileExtension = twitchDownloadQueue.peekNextVideoPart().getUrl().getFile().substring(i);
+        //int i = twitchDownloadQueue.peek().getUrl().getFile().lastIndexOf('.'); //TODO FIXIT
+        //if(i>0) fileExtension = twitchDownloadQueue.peek().getUrl().getFile().substring(i); TODO FIXIT
         fileExtension = fileExtension.replaceAll("\\?.*$", "");
 
 
@@ -228,7 +231,11 @@ public class DownloadController implements ActionListener , Observer, NodeChange
     public void update(Observable o, Object arg) {
         if(o.equals(twitchVideo)) {
             //System.out.println("Twitch Video updated!");
-            linkedGUI.setFileNameVariables(twitchVideo.getStreamInformation());
+            try {
+                linkedGUI.setFileNameVariables(twitchVideo.getStreamInformation());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -296,16 +303,32 @@ public class DownloadController implements ActionListener , Observer, NodeChange
                 linkedGUI.setFFMpegEnabled(true);
             }
         } else if(evt.getPropertyName().equals("Twitch URL entered")) {
-            if(evt.getNewValue() instanceof URL) twitchVideo.updateTwitchVideoByUrl((URL)evt.getNewValue());
-            linkedGUI.setFileNameVariables(twitchVideo.getStreamInformation());
-            linkedGUI.setFFMpegOptions(recomendedFFMpegOptions());
+            if(evt.getNewValue() instanceof URL) try {
+                twitchVideo.update((URL) evt.getNewValue());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                linkedGUI.setFileNameVariables(twitchVideo.getStreamInformation());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                linkedGUI.setFFMpegOptions(recomendedFFMpegOptions());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
 
         } else if(evt.getPropertyName().equals("download settings entered")) {
             String quality = linkedGUI.getQuality();
             String filename = linkedGUI.getFilenamePreviewText();
             File destinationDirectory = linkedGUI.getDestinationFolder();
             int workerCount = linkedGUI.getWorkerCount();
-            downloadPastBroadcast(filename, destinationDirectory, quality, workerCount, twitchVideo);
+            try {
+                downloadPastBroadcast(filename, destinationDirectory, quality, workerCount, twitchVideo);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else if (evt.getPropertyName().equals("concatVideoParts")) {
             if(evt.getNewValue() instanceof GuiPropertyChangeValue) {
                 GuiPropertyChangeValue newValue = (GuiPropertyChangeValue) evt.getNewValue();
@@ -319,7 +342,7 @@ public class DownloadController implements ActionListener , Observer, NodeChange
         }
     }
 
-    private String recomendedFFMpegOptions() {
+    private String recomendedFFMpegOptions() throws MalformedURLException {
         URL twitchUrl = twitchVideo.getUrl();
         if(Pattern.matches("http://www.twitch.tv/\\w+/b/\\d+", twitchUrl.toString())) {
             return "-c copy";

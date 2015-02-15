@@ -5,13 +5,12 @@ import com.google.gson.annotations.SerializedName;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by Flo on 06.11.2014.
@@ -30,7 +29,7 @@ import java.util.HashMap;
  *
  *
  */
-public class DownloadInfo {
+public class TwitchDownloadInfo {
     @SerializedName("api_id")       private String  apiId;
     @SerializedName("start_offset") private int     startOffset;
     @SerializedName("end_offset")   private int     endOffset;
@@ -50,56 +49,77 @@ public class DownloadInfo {
     @SerializedName("muted_segments") private String mutedSegments;
 
     private final PropertyChangeSupport pcs;
+    private LinkedList<Observer> observers;
 
-    public class BroadCastPart {
-        @SerializedName("url")public String url;
-        @SerializedName("length")public int length;
-        @SerializedName("vod_count_url")public String vodCountUrl;
-        @SerializedName("upkeep")public String upkeep;
 
-        public String getUrl() {
-            return url;
-        }
 
-        public int getLength() {
-            return length;
-        }
-
-        public String getVodCountUrl() {
-            return vodCountUrl;
-        }
-
-        public String getUpkeep() {
-            return upkeep;
-        }
+    public void addSourceTwitchBroadcastPart(TwitchVideoPart tbp) {
+        if(chunks==null) chunks = new Chunks();
+        chunks.source.add(tbp);
     }
 
-    class Chunks {
-        @SerializedName("live")private ArrayList<BroadCastPart> source;
-        @SerializedName("240p")private ArrayList<BroadCastPart> mobile;
-        @SerializedName("360p")private ArrayList<BroadCastPart> low;
-        @SerializedName("480p")private ArrayList<BroadCastPart> mid;
-        @SerializedName("720p")private  ArrayList<BroadCastPart> high;
+    public void addHighTwitchBroadcastPart(TwitchVideoPart tbp) {
+        if(chunks==null) chunks = new Chunks();
+        chunks.high.add(tbp);
+    }
 
-        public ArrayList<BroadCastPart> getSource() {
+    public void addMediumTwitchBroadcastPart(TwitchVideoPart tbp) {
+        if(chunks==null) chunks = new Chunks();
+        chunks.mid.add(tbp);
+    }
+
+    public void addLowTwitchBroadcastPart(TwitchVideoPart tbp) {
+        if(chunks==null) chunks = new Chunks();
+        chunks.low.add(tbp);
+    }
+
+    public void addMobileTwitchBroadcastPart(TwitchVideoPart tbp) {
+        if(chunks==null) chunks = new Chunks();
+        chunks.mobile.add(tbp);
+    }
+
+    public void addObserver(Observer observer) {
+        this.observers.add(observer);
+
+    }
+
+
+    class Chunks {  //TODO maybe anyone has a solution to replace that with a Hashmap (Twitch could change the names of qualities from time to time)
+        @SerializedName("live")private ArrayList<TwitchVideoPart> source;
+        @SerializedName("240p")private ArrayList<TwitchVideoPart> mobile;
+        @SerializedName("360p")private ArrayList<TwitchVideoPart> low;
+        @SerializedName("480p")private ArrayList<TwitchVideoPart> mid;
+        @SerializedName("720p")private ArrayList<TwitchVideoPart> high;
+
+        public Chunks() {
+            source = new ArrayList<TwitchVideoPart>();
+            mobile = new ArrayList<TwitchVideoPart>();
+            low = new ArrayList<TwitchVideoPart>();
+            mid = new ArrayList<TwitchVideoPart>();
+            high = new ArrayList<TwitchVideoPart>();
+        }
+
+        public ArrayList<TwitchVideoPart> getSource() {
             return source;
         }
 
-        public ArrayList<BroadCastPart> getMobile() {
+        public ArrayList<TwitchVideoPart> getMobile() {
             return mobile;
         }
 
-        public ArrayList<BroadCastPart> getLow() {
+        public ArrayList<TwitchVideoPart> getLow() {
             return low;
         }
 
-        public ArrayList<BroadCastPart> getMid() {
+        public ArrayList<TwitchVideoPart> getMid() {
             return mid;
         }
 
-        public ArrayList<BroadCastPart> getHigh() {
+        public ArrayList<TwitchVideoPart> getHigh() {
             return high;
         }
+
+
 
         @Override
         public String toString() {
@@ -111,14 +131,19 @@ public class DownloadInfo {
 
     }
 
+    public ArrayList<TwitchVideoPart> getTwitchBroadcastParts(String quality) {
+        if(quality.equals("source")) return chunks.getSource();
+        else if(quality.equals("high")) return chunks.getHigh();
+        else if(quality.equals("medium")) return chunks.getMid();
+        else if(quality.equals("low")) return chunks.getLow();
+        else if(quality.equals("mobile")) return chunks.getMobile();
+        else return null;
+    }
 
 
-
-    public DownloadInfo(TwitchVideoInfo twitchVideoInfo) {
+    public TwitchDownloadInfo() {
+//        System.out.println("DownloadInfoContructor");
         this.pcs = new PropertyChangeSupport(this);
-
-
-        //update(archiveId)
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -127,6 +152,26 @@ public class DownloadInfo {
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.removePropertyChangeListener(listener);
+    }
+
+    public ArrayList<String> getAvailableQualities() {
+        ArrayList<String> availableQualities = new ArrayList<>();
+        if(chunks.getSource()!=null)
+            if(! chunks.getSource().isEmpty() )
+                availableQualities.add("source");
+        if(chunks.getHigh()!=null)
+            if(! chunks.getHigh().isEmpty() )
+                availableQualities.add("high");
+        if(chunks.getMid()!=null)
+            if(! chunks.getMid().isEmpty() )
+                availableQualities.add("medium");
+        if(chunks.getLow()!=null)
+            if(! chunks.getLow().isEmpty() )
+                availableQualities.add("low");
+        if(chunks.getMobile()!=null)
+            if(! chunks.getMobile().isEmpty() )
+                availableQualities.add("mobile");
+        return availableQualities;
     }
 
     public String getApiId() {
@@ -165,8 +210,8 @@ public class DownloadInfo {
         return channel;
     }
 
-    public HashMap<String, ArrayList<BroadCastPart>> getAllParts() {
-        HashMap<String, ArrayList<BroadCastPart>> allParts = new HashMap<String, ArrayList<BroadCastPart>>();
+    public HashMap<String, ArrayList<TwitchVideoPart>> getAllParts() {
+        HashMap<String, ArrayList<TwitchVideoPart>> allParts = new HashMap<String, ArrayList<TwitchVideoPart>>();
         if(chunks.getSource() != null)
             allParts.put("source", chunks.getSource());
         if(chunks.getHigh() != null)
@@ -179,6 +224,24 @@ public class DownloadInfo {
             allParts.put("mobile", chunks.getMobile());
 
         return allParts;
+    }
+
+    public String getBestAvailableQuality() {
+        ArrayList<String> preferedQulitiesDescendingOrder = new ArrayList<String>();
+        preferedQulitiesDescendingOrder.add("source");
+        preferedQulitiesDescendingOrder.add("high");
+        preferedQulitiesDescendingOrder.add("medium");
+        preferedQulitiesDescendingOrder.add("low");
+        preferedQulitiesDescendingOrder.add("mobile");
+        return getPreferedQuality(preferedQulitiesDescendingOrder);
+    }
+
+    public String getPreferedQuality(List<String> preferedQualitiesDescendingOrder) {
+        for(String quality: preferedQualitiesDescendingOrder) {
+            if(getAvailableQualities().contains(quality))
+                return quality;
+        }
+        return null;
     }
 
     public String getPreviewSmall() {
@@ -264,7 +327,9 @@ public class DownloadInfo {
     }
 
     private void setChunks(Chunks chunks) {
-        HashMap<String, ArrayList<BroadCastPart>> oldParts = getAllParts();
+        HashMap<String, ArrayList<TwitchVideoPart>> oldParts;
+        if(! (this.chunks==null)) oldParts = getAllParts();
+        else oldParts = null;
         this.chunks = chunks;
         this.pcs.firePropertyChange("chunks", oldParts, getAllParts());
     }
@@ -313,11 +378,11 @@ public class DownloadInfo {
     public void update(URL apiURL) throws IOException {
         InputStream is = apiURL.openStream();
         InputStreamReader ir = new InputStreamReader(is);
-        DownloadInfo dlInfo = new Gson().fromJson(ir, DownloadInfo.class);
+        TwitchDownloadInfo dlInfo = new Gson().fromJson(ir, TwitchDownloadInfo.class);
         update(dlInfo);
     }
 
-    private void update(DownloadInfo dlInfo) {
+    private void update(TwitchDownloadInfo dlInfo) {
         setApiId(dlInfo.apiId);
         setStartOffset(dlInfo.startOffset);
         setPlayOffset(dlInfo.playOffset);

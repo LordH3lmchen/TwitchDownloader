@@ -74,7 +74,7 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
         while(fileListSc.hasNextLine()) {
             String line = fileListSc.nextLine();
             line = line.replace("file '", "").replace("'", "");
-            File partFile = new File(fileListForFfmpeg.getParent() + "/" + line);
+            File partFile = new File(line);
             System.out.println("deleting " + partFile.getPath());
             partFile.delete();
         }
@@ -85,17 +85,15 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
         System.out.println("deleting " + fileListForFfmpeg.getName());
         printToPropertyChangeListeners("deleting " + fileListForFfmpeg.getName() + "\n");
         fileListForFfmpeg.delete();
-        File playlist = new File(fileListForFfmpeg.getParent() + "/" +  destinationVideoFile.getName().replaceFirst(".mp4$", ".m3u"));
-        System.out.println("deleting" + playlist.getName());
-        printToPropertyChangeListeners("deleting" + playlist.getName() + "\n");
-
-        playlist.delete();
 
         return null;
     }
 
     protected void printToPropertyChangeListeners(String line) {
-        firePropertyChange("outputline", outputLine, outputLine = line);
+        String oldOutputline = this.outputLine;
+        this.outputLine = line;
+        firePropertyChange("outputline", oldOutputline, line);
+
     }
 
 }

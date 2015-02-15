@@ -22,4 +22,8 @@ This is an early version. Some features will be implemented in the future.
 http://trabauer.com/downloads/TwitchTools.jar
 
 
+# PS
+For me this Tool is just a Project to improve my skills with design patterns and get used to Jave Swing. 
+
+
 

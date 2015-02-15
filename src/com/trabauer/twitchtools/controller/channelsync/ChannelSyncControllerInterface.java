@@ -6,6 +6,8 @@ import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -15,11 +17,17 @@ public interface ChannelSyncControllerInterface extends ActionListener, Property
 
     public JPanel getMainPanel();
 
-    void searchFldText(String text);
+    void searchFldText(String text) throws IOException;
 
     void openUrlInBrowser(URL url);
 
     void loadMoreSearchResults();
 
     void downloadTwitchVideo(TwitchVideoInfo videoInfo);
+
+    void selectMostRecent(Integer value);
+
+    void downloadAllSelectedTwitchVideos();
+
+    void convert2mp4(TwitchVideoInfo relatedTwitchVideoInfoObject);
 }

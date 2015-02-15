@@ -1,10 +1,11 @@
 package com.trabauer.twitchtools.model;
 
-import com.trabauer.twitchtools.model.twitch.TwitchVideo;
+import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
@@ -20,14 +21,14 @@ public class VideoQualityComboBoxModel implements ComboBoxModel<String>, Observe
 
 
 
-    public VideoQualityComboBoxModel(TwitchVideo twitchVideo) {
+    public VideoQualityComboBoxModel(TwitchVideoInfo twitchVideo) throws IOException {
         this();
         fillQualities(twitchVideo);
     }
 
-    private void fillQualities(TwitchVideo twitchVideo) {
-        if(twitchVideo.getAvailableQualities().isEmpty()) qualities.add("None");
-        for(String quality: twitchVideo.getAvailableQualities()) {
+    private void fillQualities(TwitchVideoInfo twitchVideo) throws IOException {
+        if(twitchVideo.getDownloadInfo().getAvailableQualities().isEmpty()) qualities.add("None");
+        for(String quality: twitchVideo.getDownloadInfo().getAvailableQualities()) {
                     qualities.add(quality);
         }
         //this.selectedItem = qualities.indexOf(twitchVideo.getBestAvailableQuality());
@@ -71,10 +72,14 @@ public class VideoQualityComboBoxModel implements ComboBoxModel<String>, Observe
 
     @Override
     public void update(Observable o, Object arg) {
-        if(o.getClass().equals(TwitchVideo.class)) {
-            TwitchVideo twitchVideo = (TwitchVideo)o;
+        if(o.getClass().equals(TwitchVideoInfo.class)) {
+            TwitchVideoInfo twitchVideo = (TwitchVideoInfo)o;
             this.qualities = new ArrayList<String>();
-            fillQualities(twitchVideo);
+            try {
+                fillQualities(twitchVideo);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             for(ListDataListener listener: listDataListeners) {
                 listener.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, getSize()-1));

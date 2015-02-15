@@ -3,16 +3,19 @@ package com.trabauer.twitchtools.model.twitch;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
+import com.trabauer.twitchtools.utils.OsUtils;
+import com.trabauer.twitchtools.utils.TwitchToolPreferences;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Calendar;
 
 /**
  * This class represents a Search Result from the folowing api
@@ -75,6 +78,7 @@ public class TwitchVideoInfoList {
      */
     public TwitchVideoInfoList() {
         pcs = new PropertyChangeSupport(this);
+        twitchVideoInfos = new ArrayList<TwitchVideoInfo>();
     }
 
 
@@ -159,7 +163,7 @@ public class TwitchVideoInfoList {
      * @param offset        Object offset for pagination. Default is 0.
      * @throws MalformedURLException
      */
-    public void update(String channelName, boolean broadcasts, int limit, int offset) throws MalformedURLException {
+    public void update(String channelName, boolean broadcasts, int limit, int offset) throws IOException {
         String urlStr = new String().format("https://api.twitch.tv/kraken/channels/%s/videos", channelName);
         ArrayList<String> parameters = new ArrayList<String>();
         if(broadcasts) parameters.add("broadcasts=true");
@@ -170,12 +174,7 @@ public class TwitchVideoInfoList {
             String joinedParameters = Joiner.on('&').join(parameters);
             urlStr = urlStr.concat(joinedParameters);
         }
-        try {
-            update(new URL(urlStr));
-        } catch (IOException e) {
-            //shouldn't happen
-            e.printStackTrace();
-        }
+        update(new URL(urlStr));
 
 
     }
@@ -190,11 +189,11 @@ public class TwitchVideoInfoList {
      * @param broadcasts    Returns only broadcasts when true. Otherwise only highlights are returned. Default is false.
      * @throws MalformedURLException
      */
-    public void update(String channelName, boolean broadcasts) throws MalformedURLException {
+    public void update(String channelName, boolean broadcasts) throws IOException {
         update(channelName, broadcasts, -1, -1);
     }
 
-    public void update(String channelName) throws MalformedURLException {
+    public void update(String channelName) throws IOException {
         update(channelName, false, -1, -1);
     }
 
@@ -266,6 +265,12 @@ public class TwitchVideoInfoList {
         setSelfUrl(links.self);
     }
 
+    public void addTwitchVideoInfo(TwitchVideoInfo tvi) {
+        if(this.twitchVideoInfos==null) this.twitchVideoInfos = new ArrayList<TwitchVideoInfo>();
+        this.twitchVideoInfos.add(tvi);
+        this.pcs.firePropertyChange("twitchVideoInfoAdded", null, tvi);
+    }
+
     public void loadMore() {
         TwitchVideoInfoList tempVideoInfoList = new TwitchVideoInfoList();
         try {
@@ -276,10 +281,43 @@ public class TwitchVideoInfoList {
         setNextUrl(tempVideoInfoList.getNextUrlString());
         setSize(size+tempVideoInfoList.getSize());
         for(TwitchVideoInfo videoInfo: tempVideoInfoList.getTwitchVideoInfos()) {
-            this.twitchVideoInfos.add(videoInfo);
-            this.pcs.firePropertyChange("twitchVideoInfoAdded", null, videoInfo);
+            addTwitchVideoInfo(videoInfo);
         }
 
+    }
+
+    public TwitchVideoInfoList getMostRecent(int ageInDays) {
+        TwitchVideoInfoList mostRecentList = new TwitchVideoInfoList();
+
+        for(TwitchVideoInfo tvi: twitchVideoInfos) {
+            int age = 0 - ageInDays;
+            Calendar dateLimit = Calendar.getInstance();
+            dateLimit.add(Calendar.DATE, age);
+            if(tvi.getRecordedAt().compareTo(dateLimit)>0) {
+                mostRecentList.addTwitchVideoInfo(tvi);
+            }
+        }
+        return mostRecentList;
+    }
+
+    public void selectMostRecent(int ageInDays) {
+        ArrayList<TwitchVideoInfo> mostRecentList = this.getMostRecent(ageInDays).twitchVideoInfos;
+        for(TwitchVideoInfo tvi: this.twitchVideoInfos) {
+            tvi.setSelectedForDownload(false);
+        }
+        for(TwitchVideoInfo tvi: mostRecentList) {
+            tvi.setSelectedForDownload(true);
+        }
+    }
+
+    public ArrayList<TwitchVideoInfo> getAllSelected() {
+        ArrayList<TwitchVideoInfo> selectedVideos = new ArrayList<TwitchVideoInfo>();
+        for(TwitchVideoInfo tvi: twitchVideoInfos) {
+            if(tvi.isSelectedForDownload()) {
+                selectedVideos.add(tvi);
+            }
+        }
+        return selectedVideos;
     }
 
 }

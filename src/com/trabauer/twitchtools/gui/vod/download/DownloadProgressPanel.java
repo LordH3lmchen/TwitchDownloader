@@ -1,6 +1,5 @@
 package com.trabauer.twitchtools.gui.vod.download;
 
-import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;
 
 import javax.swing.*;
 import java.awt.*;
@@ -76,15 +75,15 @@ public class DownloadProgressPanel extends JPanel implements PropertyChangeListe
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals("progress")) {
             setPercent((Integer)evt.getNewValue());
-        } else if(evt.getPropertyName().equals("videoPart")) {
-            if(evt.getNewValue().getClass().equals(TwitchVideoPart.class)) {
-                TwitchVideoPart videoPart = (TwitchVideoPart)evt.getNewValue();
-                setPrefixText(new String().format("%2d / %2d", videoPart.getPartNumber()+1, partsToDownloadCount));
-            }
-        } else if (evt.getPropertyName().equals("state")) {
-            if(evt.getNewValue().toString().equals("DONE")) {
-                postfixLabel.setText("DONE");
-            }
+//        } else if(evt.getPropertyName().equals("videoPart")) {   //TODO FIXIT
+//            if(evt.getNewValue().getClass().equals(TwitchVideoPart.class)) {
+//                TwitchVideoPart videoPart = (TwitchVideoPart)evt.getNewValue();
+//                setPrefixText(new String().format("%2d / %2d", videoPart.getPartNumber()+1, partsToDownloadCount));
+//            }
+//        } else if (evt.getPropertyName().equals("state")) {
+//        if(evt.getNewValue().toString().equals("DONE")) {
+//        postfixLabel.setText("DONE");
+//        }
 
         }
 

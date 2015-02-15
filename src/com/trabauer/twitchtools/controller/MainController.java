@@ -1,14 +1,14 @@
 package com.trabauer.twitchtools.controller;
 
 import com.trabauer.twitchtools.gui.*;
-import com.trabauer.twitchtools.gui.vod.download.DownloadMainPanel;
+import com.trabauer.twitchtools.gui.vod.download.DownloadMainPanelDelete;
 import com.trabauer.twitchtools.utils.StreamCapturer;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 
 /**
  * Created by Flo on 16.01.2015.
@@ -71,8 +71,13 @@ public class MainController implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getActionCommand().equals(OPEN_VOD_DOWNLOAD_TOOL)) {
-            DownloadMainPanel downloadMainPanel = new DownloadMainPanel();
-            DownloadController downloadController = new DownloadController(downloadMainPanel);
+            DownloadMainPanelDelete downloadMainPanel = new DownloadMainPanelDelete();
+            DownloadController downloadController = null;
+            try {
+                downloadController = new DownloadController(downloadMainPanel);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             downloadMainPanel.addPropertyChangeListener(downloadController);
             mainFramePanel.openTool(downloadMainPanel);
         } else if(e.getActionCommand().equals(OPEN_CHANNEL_VOD_SYNC_TOOL)) {

@@ -1,6 +1,6 @@
 package com.trabauer.twitchtools.worker;
 
-import com.trabauer.twitchtools.model.twitch.TwitchDownloadQueue;
+import com.trabauer.twitchtools.model.WorkerQueue;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;
 
 import javax.swing.*;
@@ -21,18 +21,21 @@ import java.net.URLConnection;
  */
 public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
     private File destinationFilename;
-    private TwitchDownloadQueue downloadQueue;
+    private WorkerQueue<TwitchVideoPart> downloadWorkerQueue;
     private TwitchVideoPart videoPart;
 
 
+    public TwitchDownloadWorker() {
+        this.downloadWorkerQueue = new WorkerQueue<TwitchVideoPart>();
+    }
+
     /**
-     *
-     * @param destinationFilename
-     * @param downloadQueue
+     *  @param destinationFilename
+     * @param downloadWorkerQueue
      */
-    public TwitchDownloadWorker(File destinationFilename, TwitchDownloadQueue downloadQueue) {
+    public TwitchDownloadWorker(File destinationFilename, WorkerQueue<TwitchVideoPart> downloadWorkerQueue) {
         this.destinationFilename = destinationFilename;
-        this.downloadQueue = downloadQueue;
+        this.downloadWorkerQueue = downloadWorkerQueue;
     }
 
     /**
@@ -41,30 +44,30 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
      * @throws Exception
      */
     @Override
-    protected Void doInBackground() throws Exception {
+    protected Void doInBackground() throws IOException {
 
         videoPart = null;
 
-        while(! downloadQueue.isEmpty()) {
+        while(! downloadWorkerQueue.isEmpty()) {
             int progress = 0;
-            setVideoPart(downloadQueue.popNextVideoPart());
+            setVideoPart(downloadWorkerQueue.pop());
             setProgress(0);
 
-            URL url = videoPart.getUrl();
+            URL url = new URL(videoPart.getUrl());
             InputStream is = null;
             FileOutputStream fos = null;
-            String fileExtension = "";
 
-            int i = url.getFile().lastIndexOf('.');
-            if(i>0) fileExtension = url.getFile().substring(i);
-            fileExtension = fileExtension.replaceAll("\\?.*$", "");
 
             try{
                 URLConnection urlConnection = url.openConnection();
                 int partSize = urlConnection.getContentLength();
                 is = urlConnection.getInputStream();
-                File file = new File(destinationFilename.toString()+"_"+String.valueOf(videoPart.getPartNumber())+fileExtension);
-                System.out.println("Downloading " + file);
+                File file = new File(destinationFilename.toString()+"_"+String.valueOf(videoPart.getPartNumber())+ videoPart.getFileExtension());
+                File parent = new File(file.getParent());
+                if( ! parent.exists()) {
+                    parent.mkdirs();
+                }
+                //System.out.println("Downloading " + file);
                 fos = new FileOutputStream(file);
                 byte[] buffer = new byte[4096];
                 int len;
@@ -78,6 +81,7 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
                     //System.out.printf("\rProgress %10d/%10d, %3d %%", done, partSize, progress);
                     setProgress(Math.min(progress, 100));
                 }
+                setProgress(100);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -96,5 +100,21 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
     protected void setVideoPart(TwitchVideoPart videoPart) {
         firePropertyChange("videoPart", this.videoPart, videoPart);
         this.videoPart = videoPart;
+    }
+
+    public File getDestinationFilename() {
+        return destinationFilename;
+    }
+
+    public void setDestinationFilename(File destinationFilename) {
+        this.destinationFilename = destinationFilename;
+    }
+
+    public WorkerQueue<TwitchVideoPart> getDownloadWorkerQueue() {
+        return downloadWorkerQueue;
+    }
+
+    public void setDownloadWorkerQueue(WorkerQueue<TwitchVideoPart> downloadWorkerQueue) {
+        this.downloadWorkerQueue = downloadWorkerQueue;
     }
 }

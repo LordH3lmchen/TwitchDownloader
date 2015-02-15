@@ -1,6 +1,7 @@
 package com.trabauer.twitchtools.utils;
 
 import javax.swing.*;
+import java.io.File;
 
 /**
  * Created by Flo on 04.12.2014.
@@ -24,5 +25,19 @@ public class OsUtils {
             }
         }
         return null;
+    }
+
+    public static String getValidFilename(String filename) {
+        String validFilename =  filename.replaceAll("[^a-zA-Z0-9\\.\\-\\\\_ ]", "");
+        return validFilename.replaceAll(" ", "_");
+    }
+
+    public static String getFileExtension(File file) {
+        String fileExtension = "";
+        String filename = file.getName();
+        int i = filename.lastIndexOf('.');
+        if(i>0) fileExtension = filename.substring(i);
+        fileExtension = fileExtension.replaceAll("\\?.*$", "");
+        return fileExtension;
     }
 }

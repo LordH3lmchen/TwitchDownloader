@@ -67,19 +67,8 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         this.twitchDownloadWorkers = new ArrayList<TwitchDownloadWorker>();
         this.playlistFolderPath = TwitchToolPreferences.getInstance().get(TwitchToolPreferences.DESTINATION_DIR_PREFKEY, OsUtils.getUserHome()) + "/playlists/";
         this.ffmpegExecutorService = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-//        this.downloadExecutorService = new ThreadPoolExecutor(15, 15, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-        this.downloadExecutorService = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+        this.downloadExecutorService = new ThreadPoolExecutor(15, 15, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
-
-//        for(int i = 0; i<10; i++) {
-//            TwitchDownloadWorker tdw = new TwitchDownloadWorker();
-//            tdw.addPropertyChangeListener(this);
-//            twitchDownloadWorkers.add(tdw);
-//
-//        }
-//        workerQueue = new WorkerQueue<TwitchVideoPart>();
-
-//        twitchVideoInfoWorkerQueue = new WorkerQueue<TwitchVideoInfo>();
         twitchVideoInfoWorkerQueue = new LinkedBlockingQueue<TwitchVideoInfo>();
 
         try {

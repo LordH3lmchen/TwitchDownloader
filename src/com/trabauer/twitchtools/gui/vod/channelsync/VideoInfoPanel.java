@@ -95,7 +95,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
 
         if(relatedTwitchVideoInfoObject.getPreviewImage()!=null) {
             addImageToThis();
-        } else { //loadImage
+        } else { //loadImage in background (improves performance with small connections)
             Runnable getPreviewRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -112,7 +112,6 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
 
 
 
-//        imageLbl = new JLabel(new ImageIcon(previewImage));
         imageLbl.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

@@ -229,6 +229,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     private void initializeDownload()  {
 
         if(twitchVideoInfoWorkerQueue.isEmpty()) {
+            currentTwitchVideoInfo = null;
             return;
         }
 
@@ -324,9 +325,10 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
                 progressFrame.addOutputText(output);
             } else if(evt.getPropertyName().equals("state")) {
                 if(evt.getNewValue().equals(SwingWorker.StateValue.STARTED)) {
-//                    progressFrame.setVisible(true);
                     progressFrame.addOutputText("Starting to Convert Video");
                     currentConvertingTwitchVideoInfo = runningFFmpegWorker.getRelatedTwitchVideoInfo();
+                } else if(evt.getNewValue().equals(SwingWorker.StateValue.DONE)) {
+                    currentConvertingTwitchVideoInfo = null;
                 }
             }
         }

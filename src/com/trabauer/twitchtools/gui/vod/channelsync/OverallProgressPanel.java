@@ -28,7 +28,7 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
     public OverallProgressPanel(String operationName) {
         setLayout(new GridBagLayout());
         this.operationName = operationName;
-        this.title = "Foo - Bar";
+        this.title = "FFMPEG";
 
         titleLbl = new JLabel(operationName + " " + title);
 
@@ -124,8 +124,12 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
                     String filename = ((FFMpegConverterWorker) evt.getSource()).getDestinationVideoFile().getName();
                     setTitle(filename);
                 }
-            } else if((evt.getNewValue().equals(SwingWorker.StateValue.DONE)) && (queue.size()==0)) {
-                setVisible(false);
+            } else if(evt.getNewValue().equals(SwingWorker.StateValue.DONE) ) {
+                if(queue == null) {
+                    setVisible(false);
+                } else if (queue.size()==0) {
+                    setVisible(false);
+                }
             }
         } else if(evt.getPropertyName().equals("progress")) {
             if(increasingProgressEvts) {
@@ -152,7 +156,9 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
     private void updateGuiComponents() {
         progressBar.setValue(progress);
         int percent = (progress*100)/max;
-        String progressText = String.format("%3d %% (%d videos remaining)", percent, queue.size());
+        String progressText = "";
+        if(queue==null) progressText = String.format("%3d %%", percent);
+        else progressText = String.format("%3d %% (%d videos remaining)", percent, queue.size());
         progressLabel.setText(progressText);
     }
 

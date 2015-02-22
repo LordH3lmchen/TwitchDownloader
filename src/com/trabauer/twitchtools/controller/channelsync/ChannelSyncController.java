@@ -1,7 +1,9 @@
 package com.trabauer.twitchtools.controller.channelsync;
 
 import com.trabauer.twitchtools.TwitchToolsApp;
+import com.trabauer.twitchtools.gui.images.TwitchToolsImages;
 import com.trabauer.twitchtools.gui.vod.channelsync.ChannelSyncLogFrame;
+import com.trabauer.twitchtools.gui.vod.channelsync.ChannelSyncMenuBar;
 import com.trabauer.twitchtools.gui.vod.channelsync.SyncChannelMainPanel;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoInfoList;
@@ -9,12 +11,14 @@ import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;
 import com.trabauer.twitchtools.utils.OsUtils;
 import com.trabauer.twitchtools.utils.TwitchToolPreferences;
 import com.trabauer.twitchtools.worker.FFMpegConverterWorker;
+import com.trabauer.twitchtools.worker.HttpFileDownloadWorker;
 import com.trabauer.twitchtools.worker.TwitchDownloadWorker;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -38,7 +42,11 @@ import java.util.regex.Pattern;
  */
 public class ChannelSyncController implements ChannelSyncControllerInterface {
 
+    public static final String FFMPEG_EXE_URL_STR = "http://trabauer.com/downloads/project_ressources/TwitchTools/ffmpeg.exe";
+
+    private final JFrame mainFrame;
     private final SyncChannelMainPanel mainPanel;
+    //private final JMenuBar mainMenuBar;
     private ChannelSyncLogFrame progressFrame;
 
     private final TwitchVideoInfoList twitchVideoInfoList;
@@ -61,7 +69,18 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
 
     public ChannelSyncController() {
         this.twitchVideoInfoList = new TwitchVideoInfoList();
+
+        mainFrame = new JFrame("Twitch VOD Downloader");
+        //JMenuBar mainMenuBar = new ChannelSyncMenuBar(this, mainFrame);
         this.mainPanel = new SyncChannelMainPanel(this, twitchVideoInfoList);
+        mainFrame.getContentPane().add(this.getMainPanel());
+        mainFrame.setSize(750, 550);
+        mainFrame.setMinimumSize(new Dimension(550, 450));
+        mainFrame.setVisible(true);
+        mainFrame.setIconImage(TwitchToolsImages.getTwitchDownloadToolImage());
+
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         this.progressFrame = new ChannelSyncLogFrame();
         this.prefs = TwitchToolPreferences.getInstance();
         this.twitchDownloadWorkers = new ArrayList<TwitchDownloadWorker>();
@@ -73,6 +92,14 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
 
         try {
             ffmpegExecutable = new File(new File(getJarURI().getPath()).getParent().concat("/ffmpeg.exe"));
+            if(! ffmpegExecutable.exists()) {
+                int choice = JOptionPane.showConfirmDialog(mainFrame, "FFMPEG not found! Do you wnat to download it? FFMPEG is required to convert videos", "FFMPEG not found! Download it?", JOptionPane.YES_NO_OPTION);
+                if(choice == 0) { //YES
+                    downloadFFMPEG();
+                } else if(choice == 0) { //NO
+                    // Nothing right now
+                }
+            }
         } catch (URISyntaxException e) {
             JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -402,6 +429,19 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
 
     public void progressFrameSetVisible(boolean x) {
         this.progressFrame.setVisible(x);
+    }
+
+    private void downloadFFMPEG() {
+        URL ffmpegExeUrl = null;
+        try {
+            ffmpegExeUrl = new URL(FFMPEG_EXE_URL_STR);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        HttpFileDownloadWorker httpFileDownloadWorker = new HttpFileDownloadWorker(ffmpegExeUrl, ffmpegExecutable);
+        httpFileDownloadWorker.addPropertyChangeListener(mainPanel.getDownloadProgressPanel());
+        mainPanel.getConvertProgressPanel().setTitle("FFMPEG");
+        httpFileDownloadWorker.execute();
     }
 
 

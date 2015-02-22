@@ -1,9 +1,13 @@
 package com.trabauer.twitchtools.worker;
 
+import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
+
 import javax.swing.*;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Flo on 15.01.2015.
@@ -12,6 +16,9 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
     private File destinationVideoFile, fileListForFfmpeg, ffmpegExecutable;
     private LinkedList ffmpegOptions;
     private String outputLine;
+    private int videoLength;
+
+    private TwitchVideoInfo relatedTvi;
 
 
     public FFMpegConverterWorker(File destinationVideoFile, File fileListForFfmpeg, File ffmpegExecutable) {
@@ -36,6 +43,24 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
         this.ffmpegOptions = ffmpegOptions;
     }
 
+    public void setVideoLength(int videoLength) {
+        int oldVideoLength = this.videoLength;
+        this.videoLength = videoLength;
+        firePropertyChange("videoLength", oldVideoLength, this.videoLength);
+    }
+
+    public TwitchVideoInfo getRelatedTwitchVideoInfo() {
+        return relatedTvi;
+    }
+
+    public void setRelatedTwitchVideoInfo(TwitchVideoInfo relatedTvi) {
+        this.relatedTvi = relatedTvi;
+    }
+
+    public File getDestinationVideoFile() {
+        return destinationVideoFile;
+    }
+
     @Override
     protected Void doInBackground() throws Exception {
         LinkedList<String> command = new LinkedList<String>();
@@ -54,8 +79,10 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
 
 
         ProcessBuilder pb = new ProcessBuilder(command);
-        System.out.println("Starting to convert Video to " + destinationVideoFile.getAbsolutePath());
-        System.out.println(pb.command());
+//        System.out.println("Starting to convert Video to " + destinationVideoFile.getAbsolutePath());
+//        System.out.println(pb.command());
+        firePropertyChange("videoLength", 0, videoLength);
+        relatedTvi.setState(TwitchVideoInfo.State.CONVERTING);
 
         pb.directory(new File(destinationVideoFile.getParent()));
         Process p = pb.start();
@@ -67,6 +94,24 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
             line += "\n";
             printToPropertyChangeListeners(line);
             this.outputLine = line;
+            Matcher matcher = Pattern.compile("time=\\d{2,}:\\d{2}:\\d{2}").matcher( line );
+            if(matcher.find()) {
+                //System.out.println(line);
+                String timeStr = matcher.group().replace("time=", "");
+                String timeStrParts[] = timeStr.split(":");
+                try {
+                    int progress = Integer.parseInt(timeStrParts[0]) * 3600;
+                    progress += Integer.parseInt(timeStrParts[1]) * 60;
+                    progress += Integer.parseInt(timeStrParts[2]);
+                    if(videoLength>0) {
+                        int percent = (progress*100)/videoLength;
+                        setProgress(Math.min(100, percent));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
 
 
@@ -76,6 +121,7 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
             line = line.replace("file '", "").replace("'", "");
             File partFile = new File(line);
             System.out.println("deleting " + partFile.getPath());
+            printToPropertyChangeListeners("deleting " + partFile.getPath());
             partFile.delete();
         }
         fileListSc.close();
@@ -86,6 +132,13 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
         printToPropertyChangeListeners("deleting " + fileListForFfmpeg.getName() + "\n");
         fileListForFfmpeg.delete();
 
+        if(relatedTvi!=null) {
+            relatedTvi.setState(TwitchVideoInfo.State.CONVERTED);
+            relatedTvi.setRelatedFileOnDisk(destinationVideoFile); //TODO is now done by the converter worker after converting. Testing required!
+        }
+
+
+
         return null;
     }
 
@@ -93,7 +146,6 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
         String oldOutputline = this.outputLine;
         this.outputLine = line;
         firePropertyChange("outputline", oldOutputline, line);
-
     }
 
 }

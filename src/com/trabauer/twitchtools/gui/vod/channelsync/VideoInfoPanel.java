@@ -2,8 +2,6 @@ package com.trabauer.twitchtools.gui.vod.channelsync;
 
 import com.trabauer.twitchtools.controller.channelsync.ChannelSyncControllerInterface;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
-import com.trabauer.twitchtools.utils.OsUtils;
-import com.trabauer.twitchtools.utils.TwitchToolPreferences;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -12,7 +10,6 @@ import java.awt.event.*;
 import java.awt.font.TextAttribute;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
@@ -28,6 +25,9 @@ import java.util.Map;
  * Created by Flo on 22.01.2015.
  */
 public class VideoInfoPanel extends JPanel implements ItemListener, ActionListener, PropertyChangeListener {
+
+    private final boolean debugColors = true;
+
     private final JLabel titleLbl;
     private final JLabel imageLbl;
     private final JLabel durationLbl;
@@ -37,6 +37,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
 
     private final JPanel btnPanel;
     private final JButton downloadBtn;
+    private final JButton playBtn;
     private final JButton convertBtn;
     private final JButton deleteBtn;
 
@@ -45,14 +46,20 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
     private final JLabel linkToTwitchLbl;
     private final JLabel dateLbl;
     private final JLayeredPane previewImageLayeredPane;
-    private final Color selectedColor;
-    private final Color unselectedColor;
-    private final Color downloadedColor;
-    private final Border selectedBorder;
-    private final Border unselectedBorder;
-    private final Border downloadedBorder;
-    private boolean isSelected;
 
+
+    // Borders
+    private static int borderWidth = 5;
+    private static final Color selectedColor = new Color(165, 89, 243, 255);
+    private static final Color unselectedColor =  new Color(0, 0, 0, 50);
+    private static final Color downloadedColor = Color.GREEN;
+    private static final Color downloadingColor = Color.YELLOW;
+    private static final Color convertingColor = Color.ORANGE;
+    private static final Border selectedBorder = BorderFactory.createMatteBorder(borderWidth,borderWidth,borderWidth,borderWidth,selectedColor);
+    private static final Border unselectedBorder = BorderFactory.createMatteBorder(borderWidth,borderWidth,borderWidth,borderWidth, unselectedColor);
+    private static final Border downloadedBorder = BorderFactory.createMatteBorder(borderWidth,borderWidth,borderWidth,borderWidth,downloadedColor);
+    private static final Border downloadingBorder = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, borderWidth, downloadingColor);
+    private static final Border convertingBorder = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, borderWidth, convertingColor);
 
     public VideoInfoPanel(final TwitchVideoInfo relatedTwitchVideoInfoObject, final ChannelSyncControllerInterface controller) throws IOException {
         this.relatedTwitchVideoInfoObject = relatedTwitchVideoInfoObject;
@@ -60,18 +67,6 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         this.controller = controller;
         setLayout(new GridBagLayout());
 
-        int borderWidth = 5;
-        selectedColor = new Color(165, 89, 243, 255);
-        selectedBorder = BorderFactory.createMatteBorder(borderWidth,borderWidth,borderWidth,borderWidth,selectedColor);
-        unselectedColor = new Color(0, 0, 0, 50);
-        unselectedBorder = BorderFactory.createMatteBorder(borderWidth,borderWidth,borderWidth,borderWidth, unselectedColor);
-        downloadedColor = Color.green;
-        downloadedBorder = BorderFactory.createMatteBorder(borderWidth,borderWidth,borderWidth,borderWidth,downloadedColor);
-
-
-
-        setBorder(unselectedBorder);
-        this.isSelected=false;
 
         String title = relatedTwitchVideoInfoObject.getTitle();
         int cutlength = 40;
@@ -96,34 +91,54 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         durationLbl.setFont(original.deriveFont(Font.BOLD));
         durationLbl.setForeground(Color.WHITE);
 
-        Image previewImage = relatedTwitchVideoInfoObject.getPreviewImage();
-        imageLbl = new JLabel(new ImageIcon(previewImage));
+        imageLbl = new JLabel();
+
+        if(relatedTwitchVideoInfoObject.getPreviewImage()!=null) {
+            addImageToThis();
+        } else { //loadImage
+            Runnable getPreviewRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        relatedTwitchVideoInfoObject.loadPreviewImage();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            Thread t = new Thread(getPreviewRunnable);
+            t.start();
+        }
+
+
+
+//        imageLbl = new JLabel(new ImageIcon(previewImage));
         imageLbl.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if( ! relatedTwitchVideoInfoObject.isDownloaded()) {
-                    if (isSelected) {
+                    if (isSelected()) {
                         markForBatchCheckbo.setSelected(false);
-                        isSelected = false;
+                        relatedTwitchVideoInfoObject.setState(TwitchVideoInfo.State.INITIAL);
                     } else {
                         markForBatchCheckbo.setSelected(true);
-                        isSelected = true;
+                        relatedTwitchVideoInfoObject.setState(TwitchVideoInfo.State.SELECTED_FOR_DOWNLOAD);
                     }
                 }
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                if(! relatedTwitchVideoInfoObject.isDownloaded() ) {
-                    if (isSelected) setBorder(unselectedBorder);
+                if(relatedTwitchVideoInfoObject.getState().equals(TwitchVideoInfo.State.INITIAL)) {
+                    if (isSelected()) setBorder(unselectedBorder);
                     else setBorder(selectedBorder);
                 }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                if( ! relatedTwitchVideoInfoObject.isDownloaded()) {
-                    if (isSelected) setBorder(selectedBorder);
+                if(relatedTwitchVideoInfoObject.getState().equals(TwitchVideoInfo.State.INITIAL)) {
+                    if (isSelected()) setBorder(selectedBorder);
                     else setBorder(unselectedBorder);
                 }
             }
@@ -156,21 +171,21 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
 
         downloadBtn = new JButton("Download");
         downloadBtn.addActionListener(this);
-        downloadBtn.setVisible(false);// Nothing implemented yet for that
+
+        playBtn = new JButton("Play");
+        playBtn.setActionCommand("watchVideo");
+        playBtn.addActionListener(this);
+
 
         convertBtn = new JButton("Convert");
         convertBtn.addActionListener(this);
-        convertBtn.setVisible(false);
 
         deleteBtn = new JButton("Delete");
         deleteBtn.addActionListener(this);
-        deleteBtn.setVisible(false);
 
-        if(relatedTwitchVideoInfoObject.isDownloaded()) {
-            setDownloadedLayout();
-        } else {
-            downloadBtn.setActionCommand("downloadVideo");
-        }
+//        if(relatedTwitchVideoInfoObject.isDownloaded()) {
+//            setDownloadedLayout();
+//        }
 
 
         previewImageLayeredPane = new JLayeredPane();
@@ -248,47 +263,81 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         btnPanel.add(deleteBtn);
         btnPanel.add(convertBtn);
         btnPanel.add(downloadBtn);
+        btnPanel.add(playBtn);
         add(btnPanel, c);
+
+        setInitialLayout();
+        changeLookAndFeelBasedOnState(relatedTwitchVideoInfoObject.getState());
+
     }
 
-    private void setDownloadedLayout() {
-        downloadBtn.setText("Play");
-        downloadBtn.setActionCommand("watchVideo");
+    private void setInitialLayout() {
         downloadBtn.setVisible(true);
+        playBtn.setVisible(false);
+        deleteBtn.setVisible(false);
+        convertBtn.setVisible(false);
+        setBorder(unselectedBorder);
+    }
+
+    private void setDownloadingLayout() {
+        setInitialLayout();
+        setQueuedLayout();
+        setBorder(downloadingBorder);
+    }
+
+
+    private void setDownloadedLayout() {
+        downloadBtn.setVisible(false);
         deleteBtn.setVisible(true);
+        deleteBtn.setEnabled(true);
+        playBtn.setVisible(true);
+        convertBtn.setVisible(true);
+        convertBtn.setEnabled(true);
         markForBatchCheckbo.setEnabled(false);
         markForBatchCheckbo.setVisible(false);
         setBorder(downloadedBorder);
-
-        String fileExtension = OsUtils.getFileExtension(relatedTwitchVideoInfoObject.getRelatedFileOnDisk());
-        if(! fileExtension.equals(".mp4")) {
-            convertBtn.setVisible(true);
-        }
     }
+
+    private void setConvertedLayout() {
+        setDownloadedLayout();
+        convertBtn.setVisible(false);
+        convertBtn.setEnabled(false);
+    }
+
+    private void setConvertingLayout() {
+        setDownloadedLayout();
+        convertBtn.setEnabled(false);
+        setBorder(convertingBorder);
+    }
+
+    private void setQueuedLayout() {
+        convertBtn.setEnabled(false);
+        deleteBtn.setEnabled(false);
+        downloadBtn.setEnabled(false);
+        markForBatchCheckbo.setEnabled(false);
+    }
+
+
 
 
 
     @Override
     public void actionPerformed(ActionEvent e)  {
-        if(e.getSource()==downloadBtn) {
-            if (e.getActionCommand().equals("downloadVideo")) {
-                try {
-                    relatedTwitchVideoInfoObject.getDownloadInfo();
-                    /// .... TODO implement single download
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-                System.out.println("DownloadBtn of " + relatedTwitchVideoInfoObject.getTitle() + " pressed");
-            } else if(e.getActionCommand().equals("watchVideo")) {
-                System.out.println("Watch Btn pressed opening " + relatedTwitchVideoInfoObject.getRelatedFileOnDisk().getName());
-                try {
-                    Desktop.getDesktop().open(relatedTwitchVideoInfoObject.getRelatedFileOnDisk());
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
+        if(e.getSource()== downloadBtn) {
+            System.out.println("DownloadBtn of " + relatedTwitchVideoInfoObject.getTitle() + " pressed");
+                controller.downloadTwitchVideo(relatedTwitchVideoInfoObject);
         } else if(e.getSource() == convertBtn) {
             controller.convert2mp4(this.relatedTwitchVideoInfoObject);
+        } else if(e.getSource() == playBtn) {
+            System.out.println("Watch Btn pressed opening " + relatedTwitchVideoInfoObject.getRelatedFileOnDisk().getName());
+            try {
+                Desktop.getDesktop().open(relatedTwitchVideoInfoObject.getRelatedFileOnDisk());
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+        } else if(e.getSource() == deleteBtn) {
+
         }
     }
 
@@ -296,46 +345,90 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
     public void itemStateChanged(ItemEvent e) {
         if(e.getSource()==markForBatchCheckbo) {
             if(e.getStateChange() == ItemEvent.SELECTED) {
-                //ChangeBorder
-                setBorder(selectedBorder);
-                isSelected = true;
-                relatedTwitchVideoInfoObject.setSelectedForDownload(true);
-            } else {
-                setBorder(unselectedBorder);
-                isSelected = false;
-                relatedTwitchVideoInfoObject.setSelectedForDownload(false);
+                if(relatedTwitchVideoInfoObject.getState().equals(TwitchVideoInfo.State.INITIAL)) {
+                    relatedTwitchVideoInfoObject.setState(TwitchVideoInfo.State.SELECTED_FOR_DOWNLOAD);
+                }
+            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                if(relatedTwitchVideoInfoObject.getState().equals(TwitchVideoInfo.State.SELECTED_FOR_DOWNLOAD)) {
+                    relatedTwitchVideoInfoObject.setState(TwitchVideoInfo.State.INITIAL);
+                }
             }
         }
     }
 
 
     public boolean isSelected() {
-        return isSelected;
+        if(relatedTwitchVideoInfoObject.getState().equals(TwitchVideoInfo.State.SELECTED_FOR_DOWNLOAD)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getSource() == relatedTwitchVideoInfoObject) {
-            if (evt.getPropertyName().equals("isSelectedForDownload")) {
-                if (relatedTwitchVideoInfoObject.isSelectedForDownload()) {
-                    markForBatchCheckbo.setSelected(true);
-                } else {
-                    markForBatchCheckbo.setSelected(false);
+        if(evt.getSource() == relatedTwitchVideoInfoObject)
+            if (evt.getPropertyName().equals("previewImage")) {  // Performance imnprovement
+                // Loading the Image is done in a background Thread. This adds the Image Proeview when its done.
+                try {
+                    addImageToThis();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } else if (evt.getPropertyName().equals("relatedFile")) {
-                if (evt.getNewValue() instanceof File) {
-                    if (relatedTwitchVideoInfoObject.isDownloaded()) {
-                        relatedTwitchVideoInfoObject.setSelectedForDownload(false);
-                        setDownloadedLayout();
-                    }
-                    if(OsUtils.getFileExtension(relatedTwitchVideoInfoObject.getRelatedFileOnDisk()).equals(".mp4")) {
-                        convertBtn.setVisible(false);
-                    }
-                }
+            } else if(evt.getPropertyName().equals("state")) {
+                TwitchVideoInfo.State currentState = (TwitchVideoInfo.State) evt.getNewValue();
+                changeLookAndFeelBasedOnState(currentState);
             }
-        }
     }
 
+
+    private void changeLookAndFeelBasedOnState(TwitchVideoInfo.State currentState) {
+        if(currentState.equals(TwitchVideoInfo.State.SELECTED_FOR_DOWNLOAD)) {
+            setBorder(selectedBorder);
+            markForBatchCheckbo.setSelected(true);
+        } else {
+            markForBatchCheckbo.setSelected(false);
+        }
+        if(currentState.equals(TwitchVideoInfo.State.QUEUED_FOR_DOWNLOAD)) { //Video is in a Queue
+            downloadBtn.setEnabled(false);
+            convertBtn.setEnabled(false);
+            markForBatchCheckbo.setEnabled(false);
+            if(debugColors) {
+                setBorder(BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, borderWidth, Color.CYAN));
+            } else {
+                setBorder(selectedBorder);
+            }
+        }
+        if(currentState.equals(TwitchVideoInfo.State.DOWNLOADING)) {
+            setDownloadingLayout();
+        }
+        if(currentState.equals(TwitchVideoInfo.State.DOWNLOADED)) {
+            setDownloadedLayout();
+        }
+        if(currentState.equals(TwitchVideoInfo.State.QUEUED_FOR_CONVERT)) {
+            setConvertingLayout();
+            if(debugColors) {
+                setBorder(BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, borderWidth, Color.blue));
+            }
+        }
+        if(currentState.equals(TwitchVideoInfo.State.CONVERTING)) {
+            setConvertingLayout();
+        }
+        if(currentState.equals(TwitchVideoInfo.State.CONVERTED)) {
+            setConvertedLayout();
+        }
+        if(currentState.equals(TwitchVideoInfo.State.INITIAL)) {
+            setInitialLayout();
+        }
+
+
+
+    }
+
+    public void addImageToThis() throws IOException {
+        imageLbl.setIcon(new ImageIcon(relatedTwitchVideoInfoObject.getPreviewImage()));
+        imageLbl.repaint();
+    }
 
 
 }

@@ -45,6 +45,8 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
     private final JButton selectMostRecentBtn;
     private final JSpinner recentDaysSpinner;
     private final JLabel daysLabel;
+    private OverallProgressPanel downloadProgressPanel;
+    private OverallProgressPanel convertProgressPanel;
 
 
 
@@ -127,7 +129,15 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
         searchResultScrollPane = new JScrollPane(searchResultPanel);
         searchResultScrollPane.getVerticalScrollBar().setUnitIncrement(30);
 
+        downloadProgressPanel = new OverallProgressPanel("Downloading");
+        downloadProgressPanel.setIncreasingProgressEvts(true);
+        convertProgressPanel = new OverallProgressPanel("Converting");
+        convertProgressPanel.setIncreasingProgressEvts(false);
+
         layoutComponents();
+
+        downloadProgressPanel.setVisible(false);
+        convertProgressPanel.setVisible(false);
 
     }
 
@@ -163,10 +173,25 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
         bottomPanel.setLayout(new GridBagLayout());
         add(bottomPanel, BorderLayout.PAGE_END);
 
-        c.gridx=0;
+
         c.gridy=0;
+        c.gridx=0;
+        c.gridwidth=4;
+        c.fill=GridBagConstraints.HORIZONTAL;
+        c.weightx=1.0;
+        bottomPanel.add(downloadProgressPanel, c);
+
+        c.gridy++;
+        bottomPanel.add(convertProgressPanel, c);
+
+
+
+
+        c.gridx=0;
+        c.gridy++;
         c.weightx=0.0;
         c.weighty=0.0;
+        c.gridwidth=1;
         c.anchor=GridBagConstraints.LINE_START;
         bottomPanel.add(selectMostRecentBtn, c);
 
@@ -197,7 +222,7 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals("twitchVideoInfos"))
+        if(evt.getPropertyName().equals("contentUpdate"))
             updateResultContentPanel();
         else if(evt.getPropertyName().equals("twitchVideoInfoAdded"))
             addResultPanel((TwitchVideoInfo)evt.getNewValue());
@@ -271,6 +296,14 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
             controller.downloadAllSelectedTwitchVideos();
         }
 
+    }
+
+    public OverallProgressPanel getDownloadProgressPanel() {
+        return downloadProgressPanel;
+    }
+
+    public OverallProgressPanel getConvertProgressPanel() {
+        return convertProgressPanel;
     }
 
     public void downloadAllBtnSetEnabled(boolean x) {

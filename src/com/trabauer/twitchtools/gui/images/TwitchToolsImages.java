@@ -27,6 +27,29 @@ public class TwitchToolsImages {
         return twitchDownloadToolImage;
     }
 
+    public static Image getDeleteImage() {
+        if(twitchDownloadToolImage == null) {
+            try {
+                twitchDownloadToolImage = getImageFromResources("delete.png");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return twitchDownloadToolImage;
+    }
+
+    public static Image getPlayImage() {
+        if(twitchDownloadToolImage == null) {
+            try {
+                twitchDownloadToolImage = getImageFromResources("play.gif");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return twitchDownloadToolImage;
+    }
+
+
     public static Image getImageFromResources(String imageName) throws IOException {
         return ImageIO.read(TwitchToolsImages.class.getResource(imageName));
     }

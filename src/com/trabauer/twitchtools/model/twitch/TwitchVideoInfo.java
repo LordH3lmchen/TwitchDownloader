@@ -27,6 +27,20 @@ import java.util.regex.Pattern;
  *
  */
 public class TwitchVideoInfo extends Observable {
+
+    public enum State {
+        INITIAL,
+        SELECTED_FOR_DOWNLOAD,
+        QUEUED_FOR_DOWNLOAD,
+        DOWNLOADING,
+        DOWNLOADED,
+        SELECTED_FOR_CONVERT,
+        QUEUED_FOR_CONVERT,
+        CONVERTING,
+        CONVERTED
+    }
+
+
     public static final String APIURL = "https://api.twitch.tv";
 
     @SerializedName("title")
@@ -56,18 +70,66 @@ public class TwitchVideoInfo extends Observable {
 
 
     private TwitchDownloadInfo dlInfo;
-    private boolean isSelectedForDownload;
     private boolean dlInfoNeedsUpdate = false;
-    private PropertyChangeSupport pcs;
-
-
+    private TwitchVideoInfo.State state;
     private File relatedFileOnDisk;
 
+    private PropertyChangeSupport pcs;
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        TwitchVideoInfo.State oldState = this.state;
+        this.state = state;
+        pcs.firePropertyChange("state", oldState, this.state);
+    }
 
     public TwitchVideoInfo() {
         this.pcs = new PropertyChangeSupport(this);
         dlInfoNeedsUpdate = false;
-        isSelectedForDownload = false;
+        this.state = State.INITIAL;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TwitchVideoInfo that = (TwitchVideoInfo) o;
+
+        if (length != that.length) return false;
+        if (views != that.views) return false;
+        if (broadcastId != null ? !broadcastId.equals(that.broadcastId) : that.broadcastId != null) return false;
+        if (channel != null ? !channel.equals(that.channel) : that.channel != null) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (game != null ? !game.equals(that.game) : that.game != null) return false;
+        if (!id.equals(that.id)) return false;
+        if (links != null ? !links.equals(that.links) : that.links != null) return false;
+        if (preview != null ? !preview.equals(that.preview) : that.preview != null) return false;
+        if (recordedAt != null ? !recordedAt.equals(that.recordedAt) : that.recordedAt != null) return false;
+        if (!title.equals(that.title)) return false;
+        if (url != null ? !url.equals(that.url) : that.url != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = title.hashCode();
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (broadcastId != null ? broadcastId.hashCode() : 0);
+        result = 31 * result + id.hashCode();
+        result = 31 * result + (recordedAt != null ? recordedAt.hashCode() : 0);
+        result = 31 * result + (game != null ? game.hashCode() : 0);
+        result = 31 * result + length;
+        result = 31 * result + (preview != null ? preview.hashCode() : 0);
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        result = 31 * result + views;
+        result = 31 * result + (links != null ? links.hashCode() : 0);
+        result = 31 * result + (channel != null ? channel.hashCode() : 0);
+        return result;
     }
 
     public boolean isDownloaded() {
@@ -93,11 +155,49 @@ public class TwitchVideoInfo extends Observable {
 
 
     private class Links {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Links links = (Links) o;
+
+            if (channel != null ? !channel.equals(links.channel) : links.channel != null) return false;
+            if (self != null ? !self.equals(links.self) : links.self != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = self != null ? self.hashCode() : 0;
+            result = 31 * result + (channel != null ? channel.hashCode() : 0);
+            return result;
+        }
+
         public String self;
         public String channel;
     }
 
     private class Channel {
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Channel channel = (Channel) o;
+
+            if (!name.equals(channel.name)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode();
+        }
+
         public String name;
         @SerializedName("display_name")
         public String displayName;
@@ -239,6 +339,7 @@ public class TwitchVideoInfo extends Observable {
         return dlInfo;
     }
 
+
     private void updateDlInfoOldVodSystem() throws IOException {
         if(this.dlInfo==null || this.dlInfoNeedsUpdate) {
             if( this.dlInfo==null ) this.dlInfo = new TwitchDownloadInfo();
@@ -248,6 +349,13 @@ public class TwitchVideoInfo extends Observable {
     }
 
 
+    /**
+     * The new VOD System uses m3u PLaylist instead. The REST-API returns empty lists.
+     *
+     * This Mehtod fetches the relevant Information and stores them in the same way as the old-VOD-System
+     *
+     * @throws IOException
+     */
     private void updateDLinfoNewVodSystem() throws IOException {
         if(this.dlInfo==null || this.dlInfoNeedsUpdate) {
             if( this.dlInfo==null ) this.dlInfo = new TwitchDownloadInfo();
@@ -298,15 +406,6 @@ public class TwitchVideoInfo extends Observable {
 
             dlInfoNeedsUpdate = false;
         }
-    }
-
-    public void setSelectedForDownload(boolean selection) {
-        if(isDownloaded()) {
-            return;
-        }
-        boolean oldIsSelected = this.isSelectedForDownload;
-        this.isSelectedForDownload = selection;
-        this.pcs.firePropertyChange("isSelectedForDownload", oldIsSelected, this.isSelectedForDownload);
     }
 
     public void setTitle(String title) {
@@ -405,9 +504,6 @@ public class TwitchVideoInfo extends Observable {
         pcs.firePropertyChange("image", oldImage, this.image);
     }
 
-    public boolean isSelectedForDownload() {
-        return isSelectedForDownload;
-    }
 
     @Override
     public String toString() {
@@ -416,14 +512,25 @@ public class TwitchVideoInfo extends Observable {
                 '}';
     }
 
-    public Image getPreviewImage() throws MalformedURLException, IOException {
+    public Image loadPreviewImage() throws MalformedURLException, IOException {
         if (image == null) {
             InputStream is = getPreviewUrl().openStream();
             Image image = ImageIO.read(is);
+            this.image = image;
+//            try {  //Just a test delay to simulate a slow connection
+//                Thread.sleep(new Random().nextInt(10000));
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+            pcs.firePropertyChange("previewImage", null, image);
             return image;
         } else {
             return this.image;
         }
+    }
+
+    public Image getPreviewImage() {
+        return image;
     }
 
     public HashMap<String, String> getVideoInformation() throws IOException {

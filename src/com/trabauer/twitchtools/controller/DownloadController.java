@@ -174,7 +174,7 @@ public class DownloadController implements ActionListener , Observer, NodeChange
         this.ffmpegFilelist = createFFMpegFilelist(destinationFileTemplate, twitchDownloadWorkerQueue);
 
         for(int i=0; i<threadcount; i++){
-            TwitchDownloadWorker twitchDownloadWorker = new TwitchDownloadWorker(destinationFileTemplate, twitchDownloadWorkerQueue);
+            TwitchDownloadWorker twitchDownloadWorker = new TwitchDownloadWorker(destinationFileTemplate, twitchDownloadWorkerQueue.pop()); //TODO falsch pop ist nur eine notlösung damits kompiliert
             DownloadProgressPanel downloadProgressPanel = new DownloadProgressPanel(prefixLabelText, "  0 %");
             downloadProgressPanel.setPartsToDownloadCount(twitchDownloadWorkerQueue.getInitialSize());
             twitchDownloadWorker.addPropertyChangeListener(downloadProgressPanel);
@@ -197,8 +197,6 @@ public class DownloadController implements ActionListener , Observer, NodeChange
         File filelistFile = new File(fileTemplate + listFileExtension);
         int partCount = twitchDownloadWorkerQueue.getInitialSize();
         String fileExtension = "";
-        //int i = twitchDownloadQueue.peek().getUrl().getFile().lastIndexOf('.'); //TODO FIXIT
-        //if(i>0) fileExtension = twitchDownloadQueue.peek().getUrl().getFile().substring(i); TODO FIXIT
         fileExtension = fileExtension.replaceAll("\\?.*$", "");
 
 

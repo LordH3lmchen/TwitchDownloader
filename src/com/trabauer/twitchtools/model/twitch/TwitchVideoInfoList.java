@@ -3,12 +3,9 @@ package com.trabauer.twitchtools.model.twitch;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
-import com.trabauer.twitchtools.utils.OsUtils;
-import com.trabauer.twitchtools.utils.TwitchToolPreferences;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * This class represents a Search Result from the folowing api
@@ -45,8 +43,8 @@ public class TwitchVideoInfoList {
 
     private final PropertyChangeSupport pcs;
 
-    @SerializedName("_total")
-    private int size;
+//    @SerializedName("_total")
+//    private int size;
     @SerializedName("_links")
     private Links links;
 
@@ -115,7 +113,7 @@ public class TwitchVideoInfoList {
     @Override
     public String toString() {
         return "TwitchVideoInfoList{" +
-                "size=" + size +
+                "size=" + getSize() +
                 ", links=" + links +
                 //", twitchVideoInfos=" + Arrays.toString(twitchVideoInfos) +
                 '}';
@@ -124,13 +122,31 @@ public class TwitchVideoInfoList {
 
     /**
      * This TwitchVideoInfoList updates all its data from the source-TwitchVideoInfoList
-     * It's like a reverse Copy Constructor.
+     * It's like a Copy Constructor but the Object remains still the same. Listeners getting informed of the update.
+     *
+     * This Method fires a PropertyChangeEvent with the PropertyName="contentUpdate" to inform the listeners
+     *
      * @param source
      */
-    public void update(TwitchVideoInfoList source) {
+    public void update(TwitchVideoInfoList source, List<TwitchVideoInfo> cachedTVIs) {
+        ArrayList<TwitchVideoInfo> oldInfos = this.twitchVideoInfos;
         this.setLinks(source.getLinks());
-        this.setSize(source.getSize());
         this.setTwitchVideoInfos(source.getTwitchVideoInfos());
+        if(cachedTVIs!=null) {
+            for (TwitchVideoInfo cachedTVI : cachedTVIs) {
+                int index = this.twitchVideoInfos.indexOf(cachedTVI);
+                if(index>=0) { //replace it with the cached instance of the Object
+                    this.twitchVideoInfos.remove(index);
+                    this.twitchVideoInfos.add(index, cachedTVI);
+                    try {
+                        cachedTVI.loadPreviewImage();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        this.pcs.firePropertyChange("contentUpdate", oldInfos, twitchVideoInfos);
     }
 
     /**
@@ -138,13 +154,13 @@ public class TwitchVideoInfoList {
      * @param apiUrl
      * @throws IOException
      */
-    private void update(URL apiUrl) throws IOException {
+    private void update(URL apiUrl , List<TwitchVideoInfo> cachedTVIs) throws IOException {
         InputStream is = apiUrl.openStream();
         InputStreamReader ir = new InputStreamReader(is);
         TwitchVideoInfoList twitchVideoInfoList = new Gson().fromJson(ir, TwitchVideoInfoList.class); //deserialize
         ir.close();
         is.close();
-        update(twitchVideoInfoList);
+        update(twitchVideoInfoList, cachedTVIs);
     }
 
 
@@ -163,7 +179,7 @@ public class TwitchVideoInfoList {
      * @param offset        Object offset for pagination. Default is 0.
      * @throws MalformedURLException
      */
-    public void update(String channelName, boolean broadcasts, int limit, int offset) throws IOException {
+    public void update(String channelName, boolean broadcasts, int limit, int offset, List<TwitchVideoInfo> cachedTVIs) throws IOException {
         String urlStr = new String().format("https://api.twitch.tv/kraken/channels/%s/videos", channelName);
         ArrayList<String> parameters = new ArrayList<String>();
         if(broadcasts) parameters.add("broadcasts=true");
@@ -174,7 +190,7 @@ public class TwitchVideoInfoList {
             String joinedParameters = Joiner.on('&').join(parameters);
             urlStr = urlStr.concat(joinedParameters);
         }
-        update(new URL(urlStr));
+        update(new URL(urlStr), cachedTVIs);
 
 
     }
@@ -190,11 +206,11 @@ public class TwitchVideoInfoList {
      * @throws MalformedURLException
      */
     public void update(String channelName, boolean broadcasts) throws IOException {
-        update(channelName, broadcasts, -1, -1);
+        update(channelName, broadcasts, -1, -1, null);
     }
 
     public void update(String channelName) throws IOException {
-        update(channelName, false, -1, -1);
+        update(channelName, false, -1, -1, null);
     }
 
 
@@ -219,15 +235,8 @@ public class TwitchVideoInfoList {
         return twitchVideoInfos;
     }
 
-
-    public void setSize(int size) {
-        int oldSize = this.size;
-        this.size = size;
-        this.pcs.firePropertyChange("size", oldSize, size);
-    }
-
     public int getSize() {
-        return size;
+        return twitchVideoInfos.size();
     }
 
     public void setNextUrl(String nextUrl) {
@@ -247,7 +256,7 @@ public class TwitchVideoInfoList {
         this.pcs.firePropertyChange("selfUrl", oldSelf, this.links.self);
     }
 
-    public void setTwitchVideoInfos(ArrayList<TwitchVideoInfo> twitchVideoInfos) {
+    private void setTwitchVideoInfos(ArrayList<TwitchVideoInfo> twitchVideoInfos) {
         ArrayList<TwitchVideoInfo> oldTwitchVideoInfos = this.twitchVideoInfos;
         this.twitchVideoInfos = twitchVideoInfos;
         this.pcs.firePropertyChange("twitchVideoInfos", oldTwitchVideoInfos, this.twitchVideoInfos);
@@ -271,18 +280,18 @@ public class TwitchVideoInfoList {
         this.pcs.firePropertyChange("twitchVideoInfoAdded", null, tvi);
     }
 
-    public void loadMore() {
+    public void loadMore(List<TwitchVideoInfo> cachedTVIs) {
         TwitchVideoInfoList tempVideoInfoList = new TwitchVideoInfoList();
         try {
-            tempVideoInfoList.update(getNextUrl());
+            tempVideoInfoList.update(getNextUrl(), cachedTVIs);
         } catch (IOException e) {
             e.printStackTrace();
         }
         setNextUrl(tempVideoInfoList.getNextUrlString());
-        setSize(size+tempVideoInfoList.getSize());
         for(TwitchVideoInfo videoInfo: tempVideoInfoList.getTwitchVideoInfos()) {
             addTwitchVideoInfo(videoInfo);
         }
+        this.pcs.firePropertyChange("moreLoaded", null, twitchVideoInfos );
 
     }
 
@@ -300,20 +309,28 @@ public class TwitchVideoInfoList {
         return mostRecentList;
     }
 
-    public void selectMostRecent(int ageInDays) {
+    public void selectMostRecentForDownload(int ageInDays) {
         ArrayList<TwitchVideoInfo> mostRecentList = this.getMostRecent(ageInDays).twitchVideoInfos;
         for(TwitchVideoInfo tvi: this.twitchVideoInfos) {
-            tvi.setSelectedForDownload(false);
+            if(tvi.getState().equals(TwitchVideoInfo.State.SELECTED_FOR_DOWNLOAD)){ //Reset old selection
+                tvi.setState(TwitchVideoInfo.State.INITIAL);
+            }
         }
-        for(TwitchVideoInfo tvi: mostRecentList) {
-            tvi.setSelectedForDownload(true);
+        for(TwitchVideoInfo tvi: mostRecentList) { //Select most recent videos
+            if(tvi.getState().equals(TwitchVideoInfo.State.INITIAL)) {
+                tvi.setState(TwitchVideoInfo.State.SELECTED_FOR_DOWNLOAD);
+            }
         }
     }
 
+    /**
+     * Takes AllSelecte
+     * @return
+     */
     public ArrayList<TwitchVideoInfo> getAllSelected() {
         ArrayList<TwitchVideoInfo> selectedVideos = new ArrayList<TwitchVideoInfo>();
         for(TwitchVideoInfo tvi: twitchVideoInfos) {
-            if(tvi.isSelectedForDownload()) {
+            if(tvi.getState().equals(TwitchVideoInfo.State.SELECTED_FOR_DOWNLOAD)) {
                 selectedVideos.add(tvi);
             }
         }

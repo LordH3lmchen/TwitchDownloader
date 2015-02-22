@@ -160,6 +160,8 @@ public class ChannelSyncMenuBar extends JMenuBar implements ActionListener {
 
         private void moveQuality(int oldIndex, int newIndex) {
             Vector<String> qualities = TwitchToolPreferences.getQualityOrder();
+            if(newIndex<0 || newIndex>(qualities.size()-1))
+                return;
             String quality = qualities.elementAt(oldIndex);
             qualities.remove(oldIndex);
             qualities.add(newIndex, quality);
@@ -217,7 +219,7 @@ public class ChannelSyncMenuBar extends JMenuBar implements ActionListener {
             destinationFolderMenuItem = new JMenuItem("Settings");
             destinationFolderMenuItem.addActionListener(this);
             settingsMenu.add(destinationFolderMenuItem);
-            showProgressWindowsMenuItem = new JMenuItem("Show Progress Window");
+            showProgressWindowsMenuItem = new JMenuItem("Log Window");
             showProgressWindowsMenuItem.addActionListener(this);
             viewMenu.add(showProgressWindowsMenuItem);
 //            qualityPriorityMenuItem = new JMenuItem("Video Quality");

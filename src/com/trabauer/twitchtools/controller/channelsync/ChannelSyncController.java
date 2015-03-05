@@ -63,6 +63,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         mainFrame.setSize(750, 550);
         mainFrame.setMinimumSize(new Dimension(550, 450));
         mainFrame.setVisible(true);
+        mainFrame.setVisible(true);
         mainFrame.setIconImage(TwitchToolsImages.getTwitchDownloadToolImage());
 
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -272,11 +273,11 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     private void initializeDownload()  {
 
         if(twitchVideoInfoWorkerQueue.isEmpty()) {
-            currentTwitchVideoInfo = null;
             return;
         }
 
         mainPanel.getDownloadProgressPanel().setQueue((LinkedBlockingQueue)twitchVideoInfoWorkerQueue);
+        mainPanel.getDownloadProgressPanel().setVisible(true);
 
         //TwitchVideoInfo tvi = twitchVideoInfoWorkerQueue.pop();
 
@@ -343,6 +344,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
                     if(downloadExecutorService.getActiveCount()==0 ) { // if (Download of video is done)
                         currentTwitchVideoInfo.setMainRelatedFileOnDisk(playlist);
                         currentTwitchVideoInfo.setState(TwitchVideoInfo.State.DOWNLOADED);
+                        mainPanel.getDownloadProgressPanel().setVisible(false);
                         initializeDownload(); //try init next Download
                     }
                 } else if (evt.getNewValue().equals(SwingWorker.StateValue.STARTED)) {

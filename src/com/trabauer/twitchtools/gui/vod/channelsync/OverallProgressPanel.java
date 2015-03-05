@@ -116,8 +116,8 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals("state")) {
             if(evt.getNewValue().equals(SwingWorker.StateValue.STARTED)) {
-                setVisible(true);
                 if(! increasingProgressEvts) {
+                    setVisible(true);
                     setProgress(0);
                 }
                 if(evt.getSource() instanceof FFMpegConverterWorker) {
@@ -125,10 +125,12 @@ public class OverallProgressPanel extends JPanel implements PropertyChangeListen
                     setTitle(filename);
                 }
             } else if(evt.getNewValue().equals(SwingWorker.StateValue.DONE) ) {
-                if(queue == null) {
-                    setVisible(false);
-                } else if (queue.size()==0) {
-                    setVisible(false);
+                if(! increasingProgressEvts) {
+                    if (queue == null) {
+                        setVisible(false);
+                    } else if (queue.size() == 0) {
+                        setVisible(false);
+                    }
                 }
             }
         } else if(evt.getPropertyName().equals("progress")) {

@@ -5,9 +5,7 @@ import com.trabauer.twitchtools.gui.images.TwitchToolsImages;
 import com.trabauer.twitchtools.gui.vod.channelsync.ChannelSyncLogFrame;
 import com.trabauer.twitchtools.gui.vod.channelsync.ChannelSyncMenuBar;
 import com.trabauer.twitchtools.gui.vod.channelsync.SyncChannelMainPanel;
-import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
-import com.trabauer.twitchtools.model.twitch.TwitchVideoInfoList;
-import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;
+import com.trabauer.twitchtools.model.twitch.*;
 import com.trabauer.twitchtools.utils.OsUtils;
 import com.trabauer.twitchtools.utils.TwitchToolPreferences;
 import com.trabauer.twitchtools.worker.FFMpegConverterWorker;
@@ -18,10 +16,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -29,12 +24,9 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 
 /**
@@ -46,15 +38,10 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
 
     private final JFrame mainFrame;
     private final SyncChannelMainPanel mainPanel;
-    //private final JMenuBar mainMenuBar;
+    private final JMenuBar mainMenuBar;
     private ChannelSyncLogFrame progressFrame;
 
     private final TwitchVideoInfoList twitchVideoInfoList;
-    private TwitchVideoInfoList selectedTwitchVideoInfoList;
-    private Preferences prefs;
-    private ArrayList<TwitchDownloadWorker> twitchDownloadWorkers;
-//    private final WorkerQueue<TwitchVideoPart> workerQueue;
-//    private final WorkerQueue<TwitchVideoInfo> twitchVideoInfoWorkerQueue;
     private final LinkedBlockingQueue<TwitchVideoInfo> twitchVideoInfoWorkerQueue;
     private TwitchVideoInfo currentTwitchVideoInfo, currentConvertingTwitchVideoInfo;
     private File playlist;
@@ -71,7 +58,6 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         this.twitchVideoInfoList = new TwitchVideoInfoList();
 
         mainFrame = new JFrame("Twitch VOD Downloader");
-        //JMenuBar mainMenuBar = new ChannelSyncMenuBar(this, mainFrame);
         this.mainPanel = new SyncChannelMainPanel(this, twitchVideoInfoList);
         mainFrame.getContentPane().add(this.getMainPanel());
         mainFrame.setSize(750, 550);
@@ -80,10 +66,9 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         mainFrame.setIconImage(TwitchToolsImages.getTwitchDownloadToolImage());
 
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainMenuBar = new ChannelSyncMenuBar(this, mainFrame);
 
         this.progressFrame = new ChannelSyncLogFrame();
-        this.prefs = TwitchToolPreferences.getInstance();
-        this.twitchDownloadWorkers = new ArrayList<TwitchDownloadWorker>();
         this.playlistFolderPath = TwitchToolPreferences.getInstance().get(TwitchToolPreferences.DESTINATION_DIR_PREFKEY, OsUtils.getUserHome()) + "/playlists/";
         this.ffmpegExecutorService = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
         this.downloadExecutorService = new ThreadPoolExecutor(15, 15, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
@@ -152,13 +137,38 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
 
             File playlist = new File(destinationDir +"/playlists/" + tvi.getId() + ".m3u");
             if(playlist.exists() && playlist.isFile() && playlist.canRead()) {
-                tvi.setRelatedFileOnDisk(playlist);
+                tvi.setMainRelatedFileOnDisk(playlist);
+                tvi.putRelatedFile("playlist", playlist);
+
+                try {
+                    InputStream is = new FileInputStream(playlist);
+                    Scanner sc = new Scanner(is);
+                    int i = 0;
+                    while (sc.hasNextLine()) {
+                        String line = sc.nextLine();
+                        File file = new File(line);
+                        if(file.exists()) {
+                            i++;
+                            String key = String.format("playlist_item_%04d", i);
+                            tvi.putRelatedFile(key, file);
+                        }
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
                 tvi.setState(TwitchVideoInfo.State.DOWNLOADED);
+            }
+
+            playlistFolderPath = destinationDir + "/playlists/";
+            ffmpegFileListFile = new File(playlistFolderPath + tvi.getId() + ".ffmpeglist");
+            if(ffmpegFileListFile.exists()) {
+                tvi.putRelatedFile("ffmpegFileListFile", ffmpegFileListFile);
             }
 
             File mp4Video = new File(destinationDir + "/" + OsUtils.getValidFilename(tvi.getChannelName()) + "/" + OsUtils.getValidFilename(tvi.getTitle()) + "_" + dateTimeStr + ".mp4");
             if(mp4Video.exists() && mp4Video.isFile() && mp4Video.canRead()) {
-                tvi.setRelatedFileOnDisk(mp4Video);
+                tvi.setMainRelatedFileOnDisk(mp4Video);
+                tvi.putRelatedFile("mp4Video", mp4Video);
                 tvi.setState(TwitchVideoInfo.State.CONVERTED);
             }
         }
@@ -243,9 +253,15 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         ffMpegConverterWorker.addPropertyChangeListener(mainPanel.getConvertProgressPanel());
         LinkedBlockingQueue queue = (LinkedBlockingQueue)ffmpegExecutorService.getQueue();
         mainPanel.getConvertProgressPanel().setQueue(queue);
-        //relatedTwitchVideoInfoObject.setRelatedFileOnDisk(destinationVideoFile); //TODO is now done by the converter worker after converting. Testing required! This makes it possible to watch while converting
+        //relatedTwitchVideoInfoObject.setMainRelatedFileOnDisk(destinationVideoFile); //TODO is now done by the converter worker after converting. Testing required! This makes it possible to watch while converting
         relatedTwitchVideoInfoObject.setState(TwitchVideoInfo.State.QUEUED_FOR_CONVERT);
         ffmpegExecutorService.execute(ffMpegConverterWorker);
+    }
+
+    @Override
+    public void delete(TwitchVideoInfo relatedTwitchVideoInfoObject) {
+        relatedTwitchVideoInfoObject.deleteAllRelatedFiles();
+        relatedTwitchVideoInfoObject.setState(TwitchVideoInfo.State.INITIAL);
     }
 
     /**
@@ -325,11 +341,9 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             if(evt.getPropertyName().equals("state")) {
                 if(evt.getNewValue().equals(SwingWorker.StateValue.DONE)) {
                     if(downloadExecutorService.getActiveCount()==0 ) { // if (Download of video is done)
-                        currentTwitchVideoInfo.setRelatedFileOnDisk(playlist);
+                        currentTwitchVideoInfo.setMainRelatedFileOnDisk(playlist);
                         currentTwitchVideoInfo.setState(TwitchVideoInfo.State.DOWNLOADED);
-
                         initializeDownload(); //try init next Download
-
                     }
                 } else if (evt.getNewValue().equals(SwingWorker.StateValue.STARTED)) {
                     TwitchDownloadWorker source = (TwitchDownloadWorker) evt.getSource();
@@ -359,12 +373,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
                 }
             }
         }
-
     }
-
-
-
-
 
     private void createM3uPlaylist(File fileName, List<File> files) {
         //return createFileList("", "", fileName, twitchDownloadWorkerQueue, ".m3u", List<File>files);

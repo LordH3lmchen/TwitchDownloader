@@ -177,6 +177,7 @@ public class TwitchVideoInfoList {
      * @param broadcasts    Returns only broadcasts when true. Otherwise only highlights are returned. Default is false.
      * @param limit         Maximum number of objects in array. Default is 10. Maximum is 100. If limit<=0 the Twitch API default is used
      * @param offset        Object offset for pagination. Default is 0.
+     * @param cachedTVIs
      * @throws MalformedURLException
      */
     public void update(String channelName, boolean broadcasts, int limit, int offset, List<TwitchVideoInfo> cachedTVIs) throws IOException {

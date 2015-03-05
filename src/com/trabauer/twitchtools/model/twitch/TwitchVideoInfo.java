@@ -72,9 +72,10 @@ public class TwitchVideoInfo extends Observable {
     private TwitchDownloadInfo dlInfo;
     private boolean dlInfoNeedsUpdate = false;
     private TwitchVideoInfo.State state;
-    private File relatedFileOnDisk;
+    private HashMap<String, File> relatedFiles;
 
-    private PropertyChangeSupport pcs;
+
+    protected PropertyChangeSupport pcs;
 
     public State getState() {
         return state;
@@ -90,6 +91,7 @@ public class TwitchVideoInfo extends Observable {
         this.pcs = new PropertyChangeSupport(this);
         dlInfoNeedsUpdate = false;
         this.state = State.INITIAL;
+        this.relatedFiles = new HashMap<>();
     }
 
     @Override
@@ -132,25 +134,52 @@ public class TwitchVideoInfo extends Observable {
         return result;
     }
 
-    public boolean isDownloaded() {
-        if(relatedFileOnDisk ==null) {
+    public boolean relatedFileExists() {
+        if(relatedFiles.isEmpty()) {
             return false;
         } else {
-            return relatedFileOnDisk.exists();
+            if(relatedFiles.containsKey("default")) {
+                return relatedFiles.get("default").exists();
+            } else return false;
         }
     }
 
-    public File getRelatedFileOnDisk() {
-        return relatedFileOnDisk;
+    public File getMainRelatedFileOnDisk() {
+        if(relatedFiles.containsKey("default")) {
+            return relatedFiles.get("default");
+        } else {
+            return null;
+        }
     }
 
-    public void setRelatedFileOnDisk(File relatedFileOnDisk) {
-        File oldRelatedFile = this.relatedFileOnDisk;
-        this.relatedFileOnDisk = relatedFileOnDisk;
-        pcs.firePropertyChange("relatedFile", oldRelatedFile, this.relatedFileOnDisk);
+    public void setMainRelatedFileOnDisk(File relatedFileOnDisk) {
+        File oldRelatedFile;
+        if(relatedFiles.containsKey("default")) oldRelatedFile = relatedFiles.get("default");
+        else oldRelatedFile = null;
+        relatedFiles.put("default", relatedFileOnDisk);
+        pcs.firePropertyChange("relatedFile", oldRelatedFile, relatedFiles.get("default"));
     }
 
+    public ArrayList<File> getRelatedFiles() {
+        return new ArrayList<File>(relatedFiles.values());
+    }
 
+    public void putRelatedFile(String key, File value) {
+        relatedFiles.put(key, value);
+    }
+
+    public void removeRelatedFile(String key) {
+        relatedFiles.remove(key);
+    }
+
+    public void deleteAllRelatedFiles() {
+        for(File file: relatedFiles.values()) {
+            if(file.exists()&& file.canWrite()) {
+                file.delete();
+            }
+        }
+        relatedFiles.clear();
+    }
 
 
 
@@ -517,11 +546,6 @@ public class TwitchVideoInfo extends Observable {
             InputStream is = getPreviewUrl().openStream();
             Image image = ImageIO.read(is);
             this.image = image;
-//            try {  //Just a test delay to simulate a slow connection
-//                Thread.sleep(new Random().nextInt(10000));
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
             pcs.firePropertyChange("previewImage", null, image);
             return image;
         } else {

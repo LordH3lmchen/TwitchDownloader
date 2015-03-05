@@ -1,6 +1,4 @@
 package com.trabauer.twitchtools.controller.channelsync;
-
-import com.trabauer.twitchtools.gui.vod.channelsync.SyncChannelMainPanel;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 
 import javax.swing.*;
@@ -30,4 +28,6 @@ public interface ChannelSyncControllerInterface extends ActionListener, Property
     void downloadAllSelectedTwitchVideos();
 
     void convert2mp4(TwitchVideoInfo relatedTwitchVideoInfoObject);
+
+    void delete(TwitchVideoInfo relatedTwitchVideoInfoObject);
 }

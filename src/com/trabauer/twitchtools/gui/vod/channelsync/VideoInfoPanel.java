@@ -115,7 +115,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         imageLbl.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if( ! relatedTwitchVideoInfoObject.isDownloaded()) {
+                if( ! relatedTwitchVideoInfoObject.relatedFileExists()) {
                     if (isSelected()) {
                         markForBatchCheckbo.setSelected(false);
                         relatedTwitchVideoInfoObject.setState(TwitchVideoInfo.State.INITIAL);
@@ -182,7 +182,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         deleteBtn = new JButton("Delete");
         deleteBtn.addActionListener(this);
 
-//        if(relatedTwitchVideoInfoObject.isDownloaded()) {
+//        if(relatedTwitchVideoInfoObject.relatedFileExists()) {
 //            setDownloadedLayout();
 //        }
 
@@ -328,15 +328,14 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         } else if(e.getSource() == convertBtn) {
             controller.convert2mp4(this.relatedTwitchVideoInfoObject);
         } else if(e.getSource() == playBtn) {
-            System.out.println("Watch Btn pressed opening " + relatedTwitchVideoInfoObject.getRelatedFileOnDisk().getName());
+            System.out.println("Watch Btn pressed opening " + relatedTwitchVideoInfoObject.getMainRelatedFileOnDisk().getName());
             try {
-                Desktop.getDesktop().open(relatedTwitchVideoInfoObject.getRelatedFileOnDisk());
+                Desktop.getDesktop().open(relatedTwitchVideoInfoObject.getMainRelatedFileOnDisk());
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-
         } else if(e.getSource() == deleteBtn) {
-
+            controller.delete(relatedTwitchVideoInfoObject);
         }
     }
 

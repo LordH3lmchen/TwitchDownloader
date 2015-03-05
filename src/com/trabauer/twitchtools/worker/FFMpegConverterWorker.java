@@ -134,7 +134,7 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
 
         if(relatedTvi!=null) {
             relatedTvi.setState(TwitchVideoInfo.State.CONVERTED);
-            relatedTvi.setRelatedFileOnDisk(destinationVideoFile); //TODO is now done by the converter worker after converting. Testing required!
+            relatedTvi.setMainRelatedFileOnDisk(destinationVideoFile); //TODO is now done by the converter worker after converting. Testing required!
         }
 
 

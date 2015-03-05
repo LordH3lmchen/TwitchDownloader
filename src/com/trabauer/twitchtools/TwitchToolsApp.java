@@ -54,16 +54,16 @@ public class TwitchToolsApp{
 
 
                 // New GUI
-                JFrame mainFrame = new JFrame("Twitch VOD Downloader");
+                //JFrame mainFrame = new JFrame("Twitch VOD Downloader");
                 ChannelSyncController controller = new ChannelSyncController();
-                JMenuBar mainMenuBar = new ChannelSyncMenuBar(controller, mainFrame);
-                mainFrame.getContentPane().add(controller.getMainPanel());
-                mainFrame.setSize(750, 550);
-                mainFrame.setMinimumSize(new Dimension(550, 450));
-                mainFrame.setVisible(true);
-                mainFrame.setIconImage(TwitchToolsImages.getTwitchDownloadToolImage());
+                //JMenuBar mainMenuBar = new ChannelSyncMenuBar(controller, mainFrame);
+                //mainFrame.getContentPane().add(controller.getMainPanel());
+                //mainFrame.setSize(750, 550);
+                //mainFrame.setMinimumSize(new Dimension(550, 450));
+                //mainFrame.setVisible(true);
+                //mainFrame.setIconImage(TwitchToolsImages.getTwitchDownloadToolImage());
 
-                mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                //mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             }
         });
 

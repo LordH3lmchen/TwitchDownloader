@@ -335,7 +335,13 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
                 e1.printStackTrace();
             }
         } else if(e.getSource() == deleteBtn) {
-            controller.delete(relatedTwitchVideoInfoObject);
+            int choice = JOptionPane.showConfirmDialog(this, "Delete \"" + relatedTwitchVideoInfoObject.getTitle() + "\" ?", "Delete?", JOptionPane.YES_NO_OPTION);
+            if(choice == 0) { //YES
+                controller.delete(relatedTwitchVideoInfoObject);
+            } else if(choice == 0) { //NO
+                // Nothing right now
+            }
+
         }
     }
 

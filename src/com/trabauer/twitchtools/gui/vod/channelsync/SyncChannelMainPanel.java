@@ -2,7 +2,6 @@ package com.trabauer.twitchtools.gui.vod.channelsync;
 
 import com.trabauer.twitchtools.controller.channelsync.ChannelSyncController;
 import com.trabauer.twitchtools.controller.channelsync.ChannelSyncControllerInterface;
-import com.trabauer.twitchtools.gui.ToolsPanel;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoInfoList;
 import com.trabauer.twitchtools.utils.WrapLayout;
@@ -20,7 +19,7 @@ import java.util.ArrayList;
 /**
  * Created by Flo on 16.01.2015.
  */
-public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeListener, ActionListener {
+public class SyncChannelMainPanel extends JPanel implements PropertyChangeListener, ActionListener {
 
 
     // Controller
@@ -95,7 +94,7 @@ public class SyncChannelMainPanel extends ToolsPanel implements PropertyChangeLi
 
 
     public SyncChannelMainPanel(ChannelSyncController controller, TwitchVideoInfoList twitchVideoInfoList) {
-        super("SyncChannel");
+        setName("SyncChannel");
         this.controller = controller;
         this.twitchVideoInfoList = twitchVideoInfoList;
         twitchVideoInfoList.addPropertyChangeListener(this);

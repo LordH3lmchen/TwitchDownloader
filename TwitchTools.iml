@@ -18,8 +18,9 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="gson-2.31" level="project" />
     <orderEntry type="library" name="jgoodies-common-1.2.1" level="project" />
     <orderEntry type="library" name="guava-18.0" level="project" />
+    <orderEntry type="library" name="com.google.code.gson:gson:2.3.1" level="project" />
+    <orderEntry type="library" name="com.google.guava:guava:18.0" level="project" />
   </component>
 </module>

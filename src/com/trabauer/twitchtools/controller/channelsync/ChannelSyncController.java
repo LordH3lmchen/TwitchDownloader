@@ -76,7 +76,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
 
         twitchVideoInfoWorkerQueue = new LinkedBlockingQueue<TwitchVideoInfo>();
 
-        try {
+        try { // look for ffmpeg
             ffmpegExecutable = new File(new File(getJarURI().getPath()).getParent().concat("/ffmpeg.exe"));
             if(! ffmpegExecutable.exists()) {
                 int choice = JOptionPane.showConfirmDialog(mainFrame, "FFMPEG not found! Do you wnat to download it? FFMPEG is required to convert videos", "FFMPEG not found! Download it?", JOptionPane.YES_NO_OPTION);

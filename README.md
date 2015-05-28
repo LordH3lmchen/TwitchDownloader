@@ -26,11 +26,9 @@ It's a small tool to download past broadcasts from Twitch.tv. You can enter a UR
  * Filter Results
 
 # Compiled JAR
-http://trabauer.com/downloads/TwitchTools.jar
+[TwitchVodLoader.jar](http://trabauer.com/downloads/TwitchVodLoader.jar)
 
 
-# PS
-For me this Tool is just a Project to improve my skills with design patterns and get used to Jave Swing. 
 
 
 

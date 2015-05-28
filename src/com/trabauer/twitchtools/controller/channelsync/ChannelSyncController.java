@@ -1,12 +1,13 @@
 package com.trabauer.twitchtools.controller.channelsync;
 
-import com.trabauer.twitchtools.TwitchToolsApp;
+import com.trabauer.twitchtools.TwitchVodLoader;
 import com.trabauer.twitchtools.gui.images.TwitchToolsImages;
 import com.trabauer.twitchtools.gui.vod.channelsync.ChannelSyncLogFrame;
 import com.trabauer.twitchtools.gui.vod.channelsync.ChannelSyncMenuBar;
 import com.trabauer.twitchtools.gui.vod.channelsync.SyncChannelMainPanel;
 import com.trabauer.twitchtools.model.twitch.*;
 import com.trabauer.twitchtools.utils.OsUtils;
+import com.trabauer.twitchtools.utils.OsValidator;
 import com.trabauer.twitchtools.utils.TwitchToolPreferences;
 import com.trabauer.twitchtools.worker.FFMpegConverterWorker;
 import com.trabauer.twitchtools.worker.HttpFileDownloadWorker;
@@ -51,6 +52,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     private final ThreadPoolExecutor ffmpegExecutorService;
     private final ThreadPoolExecutor downloadExecutorService;
     private File ffmpegExecutable;
+    private String ffmpegCommand;
     private ArrayList<TwitchVideoPart> videoParts;
 
 
@@ -66,7 +68,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         mainFrame.setVisible(true);
         mainFrame.setIconImage(TwitchToolsImages.getTwitchDownloadToolImage());
 
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mainMenuBar = new ChannelSyncMenuBar(this, mainFrame);
 
         this.progressFrame = new ChannelSyncLogFrame();
@@ -74,17 +76,26 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         this.ffmpegExecutorService = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
         this.downloadExecutorService = new ThreadPoolExecutor(15, 15, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
-        twitchVideoInfoWorkerQueue = new LinkedBlockingQueue<TwitchVideoInfo>();
+        twitchVideoInfoWorkerQueue = new LinkedBlockingQueue<>();
 
         try { // look for ffmpeg
-            ffmpegExecutable = new File(new File(getJarURI().getPath()).getParent().concat("/ffmpeg.exe"));
-            if(! ffmpegExecutable.exists()) {
-                int choice = JOptionPane.showConfirmDialog(mainFrame, "FFMPEG not found! Do you wnat to download it? FFMPEG is required to convert videos", "FFMPEG not found! Download it?", JOptionPane.YES_NO_OPTION);
-                if(choice == 0) { //YES
-                    downloadFFMPEG();
-                } else if(choice == 0) { //NO
+            if(OsValidator.isWindows()) {
+                ffmpegExecutable = new File(new File(getJarURI().getPath()).getParent().concat("/ffmpeg.exe"));
+                if (!ffmpegExecutable.exists()) {
+                    int choice = JOptionPane.showConfirmDialog(mainFrame, "FFMPEG not found! Do you wnat to download it? FFMPEG is required to convert videos", "FFMPEG not found! Download it?", JOptionPane.YES_NO_OPTION);
+                    if (choice == 0) { //YES
+                        downloadFFMPEG();
+                    } //else if(choice == 0) { //NO
                     // Nothing right now
+                    //}
                 }
+                ffmpegCommand = ffmpegExecutable.getAbsolutePath();
+            } else if(OsValidator.isUnix() || OsValidator.isMac()) {
+                System.out.println("Running on a Unix System");
+                ffmpegCommand = "ffmpeg";
+            } else {
+                System.out.println("unknown OS asuming ffmpeg is installed and can be accessed via path-variable");
+                ffmpegCommand = "ffmpeg";
             }
         } catch (URISyntaxException e) {
             JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -99,7 +110,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     @Override
     public void searchFldText(String text) throws IOException {
 
-        ArrayList<TwitchVideoInfo> cachedTVIs = new ArrayList<TwitchVideoInfo>();
+        ArrayList<TwitchVideoInfo> cachedTVIs = new ArrayList<>();
 
 
         //Getting all Quued and Processed VideoInfoObjects
@@ -110,6 +121,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         for(TwitchVideoInfo queued: twitchVideoInfoWorkerQueue.toArray(new TwitchVideoInfo[0])) {
             cachedTVIs.add(queued);
         }
+
         for(Runnable runnable:ffmpegExecutorService.getQueue()) {
             if(runnable instanceof FFMpegConverterWorker) {
                 FFMpegConverterWorker ffMpegConverterWorker = (FFMpegConverterWorker) runnable;
@@ -128,7 +140,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
      * Updates the State of a new TwitchVideoInfoObjects based on the Stored Videos
      *
      *
-     * @param tvi
+     * @param tvi the Twitch Video Info Object that should be modified
      */
     private void searchLocalFiles(TwitchVideoInfo tvi) {
         if (tvi.getState().equals(TwitchVideoInfo.State.INITIAL)) {
@@ -247,14 +259,13 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         }
 
 
-        FFMpegConverterWorker ffMpegConverterWorker = new FFMpegConverterWorker(destinationVideoFile, ffmpegFileListFile, ffmpegExecutable, ffmpegOptions);
+        FFMpegConverterWorker ffMpegConverterWorker = new FFMpegConverterWorker(destinationVideoFile, ffmpegFileListFile, ffmpegCommand, ffmpegOptions);
         ffMpegConverterWorker.setVideoLength(relatedTwitchVideoInfoObject.getLength());
         ffMpegConverterWorker.setRelatedTwitchVideoInfo(relatedTwitchVideoInfoObject);
         ffMpegConverterWorker.addPropertyChangeListener(this);
         ffMpegConverterWorker.addPropertyChangeListener(mainPanel.getConvertProgressPanel());
         LinkedBlockingQueue queue = (LinkedBlockingQueue)ffmpegExecutorService.getQueue();
         mainPanel.getConvertProgressPanel().setQueue(queue);
-        //relatedTwitchVideoInfoObject.setMainRelatedFileOnDisk(destinationVideoFile); //TODO is now done by the converter worker after converting. Testing required! This makes it possible to watch while converting
         relatedTwitchVideoInfoObject.setState(TwitchVideoInfo.State.QUEUED_FOR_CONVERT);
         ffmpegExecutorService.execute(ffMpegConverterWorker);
     }
@@ -268,7 +279,6 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     /**
      * Prepares the Download and creates needed files in the destination folder
      *
-     * @throws IOException
      */
     private void initializeDownload()  {
 
@@ -301,7 +311,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         String dateTimeStr = sdf.format(currentTwitchVideoInfo.getRecordedAt().getTime());
         String destinationDir = TwitchToolPreferences.getInstance().get(TwitchToolPreferences.DESTINATION_DIR_PREFKEY, OsUtils.getUserHome());
         File destinationFilenameTemplate = new File(destinationDir + "/" + OsUtils.getValidFilename(currentTwitchVideoInfo.getChannelName()) + "/" + OsUtils.getValidFilename(currentTwitchVideoInfo.getTitle()) + "_" + dateTimeStr);
-        ArrayList<File> destinationFiles = new ArrayList<File>();
+        ArrayList<File> destinationFiles = new ArrayList<>();
 
         for(TwitchVideoPart videoPart: videoParts) {
             videoPart.getFileExtension();
@@ -414,7 +424,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         final URL url;
         final URI              uri;
 
-        domain = TwitchToolsApp.class.getProtectionDomain();
+        domain = TwitchVodLoader.class.getProtectionDomain();
         source = domain.getCodeSource();
         url    = source.getLocation();
         uri    = url.toURI();

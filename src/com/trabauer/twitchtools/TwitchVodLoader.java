@@ -9,9 +9,9 @@ import java.awt.*;
 import java.net.URISyntaxException;
 
 /**
- * Created by Flo on 12.11.2014.
+ * Created by Florian Trabauer on 12.11.2014. Main
  */
-public class TwitchToolsApp{
+public class TwitchVodLoader {
 
 
     public static void main (String[] args) throws URISyntaxException {

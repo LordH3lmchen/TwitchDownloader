@@ -202,8 +202,10 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
     private void layoutComponents() {
 
         imageLbl.setBounds(0,0 ,320,180);
-        viewcountLbl.setBounds(5,0,100,25);
-        durationLbl.setBounds(255,0,100,25);
+        viewcountLbl.setBounds(5,0,310,25);
+        viewcountLbl.setHorizontalAlignment(SwingConstants.LEFT);
+        durationLbl.setBounds(5,0,310,25);
+        durationLbl.setHorizontalAlignment(SwingConstants.RIGHT);
         //Adding a dark bar to the previewImage to increase the readability of the viewcount and duration
         JLabel darkBarkLbl = new JLabel();
         darkBarkLbl.setBounds(0,0,320,25);

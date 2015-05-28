@@ -1,15 +1,16 @@
 It's a small tool to download past broadcasts from Twitch.tv. You can enter a URL to a past broadcast.
 
-## HowTo use it:
+# HowTo use it
 
+## Windows
 
 1. Get the compiled version (jar File)
-2. Get ffmpeg https://www.ffmpeg.org/download.html
-3. place both the jar and ffmpeg in the same directory
-4. Start the tool
-5. open settings if you want to change the quality of VODs or the destination Directory ...
+2. Start the tool
 
-Use it.
+## Linux or Apple OS X
+1. Install ffmpeg
+2. Get the compiled version (jar File)
+3. Start the tool
 
 
 # Features
@@ -17,12 +18,11 @@ Use it.
  * A m3u-playlist is created to make watching the past broadcast easier.
  * Support for the new TwitchVOD System, that stores the VOD in 3 second Chunks.
  * Downloading Multiple Videos (Queue)
- * queue for converting.
+ * queue for converting and downloads
 
 
 # Upcoming Features
 
- * Improved queuing of downloads
  * Filter Results
 
 # Compiled JAR

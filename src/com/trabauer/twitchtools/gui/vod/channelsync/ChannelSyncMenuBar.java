@@ -50,6 +50,11 @@ public class ChannelSyncMenuBar extends JMenuBar implements ActionListener {
                 }
             });
 
+            JLabel helpTextLbl = new JLabel("<html>You are able to move the qualities up and down. " +
+                    "TwitchTools trys to download the video qualities in that order. " +
+                    "If the quality at the top isn't available, it will try to download the " +
+                    "second, third ... and so on.</html>");
+
 
             JButton okBtn = new JButton("OK");
             okBtn.addActionListener(new ActionListener() {
@@ -147,12 +152,13 @@ public class ChannelSyncMenuBar extends JMenuBar implements ActionListener {
             formPanel.add(upDownPanel, c);
 
             c.gridy++;
-            formPanel.add(new JLabel("<html>You are able to move the qualities up and down. " +
-                    "TwitchTools trys to download the video qualities in that order. " +
-                    "If the quality at the top isn't available, it will try to download the " +
-                    "second, third ... and so on.</html>"), c);
 
-            setSize(400, 310);
+
+            helpTextLbl.setPreferredSize(new Dimension(400,100));
+            formPanel.add(helpTextLbl, c);
+
+            //setSize(400, 500);
+            pack();
 
 
 

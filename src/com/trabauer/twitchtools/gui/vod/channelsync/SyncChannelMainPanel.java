@@ -49,50 +49,6 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
 
 
 
-    public static void main(String[] args) {
-        // Set look & feel
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-//              DownloadController downloadController = new DownloadController();
-//                MainController mainController = MainController.getInstance();
-
-                final JFrame mainFrame = new JFrame("SyncChannelTest");
-                TwitchVideoInfoList twitchVideoInfoList = new TwitchVideoInfoList(); //model
-                ChannelSyncController controller = new ChannelSyncController(); //Controller
-
-                mainFrame.setContentPane(controller.getMainPanel()); //get the view from controller
-
-                mainFrame.pack();
-                mainFrame.setSize(1080, 700);
-//                mainFrame.addComponentListener(new ComponentAdapter() {
-//                    @Override
-//                    public void componentResized(ComponentEvent e) {
-//                        System.out.println("MainFrameSiz=" + mainFrame.getSize());
-//
-//                    }
-//                });
-                mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                mainFrame.setVisible(true);
-            }
-        });
-
-
-    }
-
-
     public SyncChannelMainPanel(ChannelSyncController controller, TwitchVideoInfoList twitchVideoInfoList) {
         setName("SyncChannel");
         this.controller = controller;

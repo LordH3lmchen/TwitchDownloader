@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TwitchTools.iml" filepath="$PROJECT_DIR$/TwitchTools.iml" />
+      <module fileurl="file:///mnt/majestix-home/flo/Developer/IDEAprojects/TwitchTools/TwitchVodLoader.iml" filepath="/mnt/majestix-home/flo/Developer/IDEAprojects/TwitchTools/TwitchVodLoader.iml" />
     </modules>
   </component>
 </project>
-

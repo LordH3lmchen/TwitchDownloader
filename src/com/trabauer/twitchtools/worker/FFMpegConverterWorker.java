@@ -13,7 +13,8 @@ import java.util.regex.Pattern;
  * Created by Flo on 15.01.2015.
  */
 public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
-    private File destinationVideoFile, fileListForFfmpeg, ffmpegExecutable;
+    private File destinationVideoFile, fileListForFfmpeg;
+    private String ffmpegCommand;
     private LinkedList ffmpegOptions;
     private String outputLine;
     private int videoLength;
@@ -21,10 +22,10 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
     private TwitchVideoInfo relatedTvi;
 
 
-    public FFMpegConverterWorker(File destinationVideoFile, File fileListForFfmpeg, File ffmpegExecutable) {
+    public FFMpegConverterWorker(File destinationVideoFile, File fileListForFfmpeg, String ffmpegCommand) {
         this.destinationVideoFile = destinationVideoFile;
         this.fileListForFfmpeg = fileListForFfmpeg;
-        this.ffmpegExecutable = ffmpegExecutable;
+        this.ffmpegCommand = ffmpegCommand;
         this.ffmpegOptions = new LinkedList();
         ffmpegOptions.add("-c:v");
         ffmpegOptions.add("libx264");
@@ -36,10 +37,10 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
 
     }
 
-    public FFMpegConverterWorker(File destinationVideoFile, File fileListForFfmpeg, File ffmpegExecutable, LinkedList ffmpegOptions) {
+    public FFMpegConverterWorker(File destinationVideoFile, File fileListForFfmpeg, String ffmpegCommand, LinkedList ffmpegOptions) {
         this.destinationVideoFile = destinationVideoFile;
         this.fileListForFfmpeg = fileListForFfmpeg;
-        this.ffmpegExecutable = ffmpegExecutable;
+        this.ffmpegCommand = ffmpegCommand;
         this.ffmpegOptions = ffmpegOptions;
     }
 
@@ -69,7 +70,7 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
             System.out.println(outputLine);
             destinationVideoFile.delete();
         }
-        command.add(ffmpegExecutable.getAbsolutePath());
+        command.add(ffmpegCommand);
         command.add("-f");
         command.add("concat");
         command.add("-i");
@@ -109,6 +110,7 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    printToPropertyChangeListeners(e.getMessage());
                 }
             }
 
@@ -121,7 +123,7 @@ public class FFMpegConverterWorker extends SwingWorker<Void, Void> {
             line = line.replace("file '", "").replace("'", "");
             File partFile = new File(line);
             System.out.println("deleting " + partFile.getPath());
-            printToPropertyChangeListeners("deleting " + partFile.getPath());
+            printToPropertyChangeListeners("deleting " + partFile.getPath() + "\n");
             partFile.delete();
         }
         fileListSc.close();

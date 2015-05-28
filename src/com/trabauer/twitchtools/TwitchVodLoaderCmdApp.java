@@ -13,7 +13,7 @@ import java.net.URLConnection;
 /**
  * Created by flo on 03.11.14.
  */
-public class TwitchToolsCmdApp {
+public class TwitchVodLoaderCmdApp {
 
     private static final String destinationDir = "D:\\twitchStreams";
 

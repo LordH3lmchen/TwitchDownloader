@@ -36,6 +36,10 @@ import java.util.regex.Pattern;
 public class ChannelSyncController implements ChannelSyncControllerInterface {
 
     public static final String FFMPEG_EXE_URL_STR = "http://trabauer.com/downloads/project_ressources/TwitchTools/ffmpeg.exe";
+    public static final String VERSION_INFO_URL_STR = "http://trabauer.com/downloads/TwitchVodLoaderInfo.txt";
+    public static final String PROGRAM_DOWNLOAD_URL_STR = "http://trabauer.com/downloads/TwitchVodLoader.jar";
+    public static final String PROJECT_PAGE_URL_STR = "http://lordh3lmchen.github.io/TwitchDownloader/";
+    public static final String PROGRAM_VERSION = "TwitchVodLoader 0.1";
 
     private final JFrame mainFrame;
     private final SyncChannelMainPanel mainPanel;
@@ -54,6 +58,8 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     private File ffmpegExecutable;
     private String ffmpegCommand;
     private ArrayList<TwitchVideoPart> videoParts;
+
+
 
 
     public ChannelSyncController() {
@@ -82,7 +88,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             if(OsValidator.isWindows()) {
                 ffmpegExecutable = new File(new File(getJarURI().getPath()).getParent().concat("/ffmpeg.exe"));
                 if (!ffmpegExecutable.exists()) {
-                    int choice = JOptionPane.showConfirmDialog(mainFrame, "FFMPEG not found! Do you wnat to download it? FFMPEG is required to convert videos", "FFMPEG not found! Download it?", JOptionPane.YES_NO_OPTION);
+                    int choice = JOptionPane.showConfirmDialog(mainFrame, "FFMPEG not found! Do you want to download it? FFMPEG is required to convert videos", "FFMPEG not found! Download it?", JOptionPane.YES_NO_OPTION);
                     if (choice == 0) { //YES
                         downloadFFMPEG();
                     } //else if(choice == 0) { //NO
@@ -99,6 +105,34 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             }
         } catch (URISyntaxException e) {
             JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        checkForUpdates();
+
+
+    }
+
+    private void checkForUpdates() {
+        URL VersionInfoUrl = null;
+        try {
+            VersionInfoUrl= new URL(VERSION_INFO_URL_STR);
+            InputStream is = VersionInfoUrl.openStream();
+            Scanner sc = new Scanner(is);
+            String line = null;
+            if(sc.hasNextLine()) line = sc.nextLine();
+            if(! line.equals(PROGRAM_VERSION)) {
+                System.out.println("Program isn't up to date. ");
+                int choice = JOptionPane.showConfirmDialog(mainFrame, "Update Available! Download latest Version?", "Update Available!", JOptionPane.YES_NO_OPTION);
+                if (choice == 0) { //YES
+                    openUrlInBrowser(new URL(PROJECT_PAGE_URL_STR));
+                } //else if(choice == 0) { //NO
+                // Nothing right now
+                //}
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

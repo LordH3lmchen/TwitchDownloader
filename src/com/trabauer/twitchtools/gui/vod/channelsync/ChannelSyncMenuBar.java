@@ -9,7 +9,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Map;
 import java.util.Vector;
 import java.util.prefs.Preferences;
 
@@ -182,24 +188,98 @@ public class ChannelSyncMenuBar extends JMenuBar implements ActionListener {
 
 
 
-    private class AboutThisProgramDialog extends JDialog {
+    private class AboutThisProgramDialog extends JDialog implements ActionListener {
+
+        private final JLabel visitProjectSiteLbl;
+        private JButton closeBtn, licenseBtn;
+
         public AboutThisProgramDialog(Frame owner) {
             super(owner, "About Twitch Downloader");
 
+            GridBagLayout layoutManager = new GridBagLayout();
+            GridBagConstraints gc = new GridBagConstraints();
+            this.setLayout(layoutManager);
 
             ImageIcon logoIcon = new ImageIcon(TwitchToolsImages.getTwitchDownloadToolImage());
-            JLabel programNameVersionLabel = new JLabel("TwitchDownloader 0.1", logoIcon, JLabel.CENTER);
+            JLabel programNameVersionLabel = new JLabel(controller.PROGRAM_VERSION, logoIcon, JLabel.CENTER);
             Font origFont = programNameVersionLabel.getFont().deriveFont(Font.BOLD);
             programNameVersionLabel.setFont(origFont.deriveFont(30.0F));
             programNameVersionLabel.setVerticalTextPosition(JLabel.BOTTOM);
             programNameVersionLabel.setHorizontalTextPosition(JLabel.CENTER);
-            add(programNameVersionLabel);
 
-            setVisible(true);
+            gc.gridx = 0;
+            gc.gridy = 0;
+            gc.insets = new Insets(5,5,5,5);
+            gc.gridwidth = 2;
+            add(programNameVersionLabel, gc);
+
+            JLabel copyrightLbl = new JLabel("Copyright 2014-2015 Florian Trabauer");
+            gc.gridy++;
+            add(copyrightLbl, gc);
+            visitProjectSiteLbl = new JLabel("Visit the TwitchDownloader website");
+            Font visitProjectSiteFont = visitProjectSiteLbl.getFont();
+            Map visitProjectSiteFontAttributes = visitProjectSiteFont.getAttributes();
+            visitProjectSiteFontAttributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+            visitProjectSiteLbl.setForeground(Color.BLUE);
+            visitProjectSiteLbl.setFont(visitProjectSiteFont.deriveFont(visitProjectSiteFontAttributes));
+            visitProjectSiteLbl.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    super.mouseClicked(e);
+                    try {
+                        controller.openUrlInBrowser(new URL("http://lordh3lmchen.github.io/TwitchDownloader/"));
+                    } catch (MalformedURLException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            });
+            gc.gridy++;
+            add(visitProjectSiteLbl, gc);
+            licenseBtn = new JButton("License");
+            licenseBtn.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    super.mouseClicked(e);
+                    try {
+                        controller.openUrlInBrowser(new URL("http://trabauer.com/downloads/TwitchDownloader_LICENSE.txt"));
+                    } catch (MalformedURLException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            });
+            gc.gridy++;
+            gc.gridwidth = 1;
+            add(licenseBtn, gc);
+            closeBtn = new JButton("Close");
+            closeBtn.addActionListener(this);
+            gc.gridx++;
+            gc.anchor = GridBagConstraints.LINE_END;
+            add(closeBtn, gc);
+
             pack();
 
         }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(e.getSource()==closeBtn) {
+                this.setVisible(false);
+            } else if(e.getSource()==licenseBtn) {
+                this.setVisible(false); //TODO show license instead
+            }
+        }
     }
+
+//    private class licenseDialog extends JDialog { //STUB not used default browser is used instead.
+//        public licenseDialog(Frame owner) {
+//            super(owner, "License");
+//            GridBagLayout layout = new GridBagLayout();
+//            setLayout(layout);
+//            GridBagConstraints gc = new GridBagConstraints();
+//
+//
+//        }
+//    }
 
     private File showDestinationDirChooser(String path) {
         JFileChooser fileChooser = null;

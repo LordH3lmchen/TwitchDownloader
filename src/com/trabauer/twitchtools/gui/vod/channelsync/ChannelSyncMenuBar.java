@@ -1,6 +1,7 @@
 package com.trabauer.twitchtools.gui.vod.channelsync;
 
 import com.trabauer.twitchtools.controller.channelsync.ChannelSyncController;
+import com.trabauer.twitchtools.gui.images.TwitchToolsImages;
 import com.trabauer.twitchtools.utils.OsUtils;
 import com.trabauer.twitchtools.utils.TwitchToolPreferences;
 
@@ -17,17 +18,18 @@ import java.util.prefs.Preferences;
  */
 public class ChannelSyncMenuBar extends JMenuBar implements ActionListener {
 
-//    private final JMenu fileMenu;
+    //    private final JMenu fileMenu;
     private final JMenu settingsMenu;
     private final JMenuItem destinationFolderMenuItem;
-//    private final JMenuItem qualityPriorityMenuItem;
+    //    private final JMenuItem qualityPriorityMenuItem;
     private final ChannelSyncController controller;
     private final Preferences prefs;
     private final SettingsFolderDialog settingsFolderDialog;
-    private final VideoQualityDialog videoQualityDialog;
+    private final AboutThisProgramDialog aboutThisProgramDialog;
     private final JFrame mainFrame;
-    private final JMenu viewMenu;
+    private final JMenu viewMenu, helpMenu;
     private final JMenuItem showProgressWindowsMenuItem;
+    private final JMenuItem showAboutDialogMenuItem;
 
 
     private class SettingsFolderDialog extends JDialog {
@@ -179,73 +181,83 @@ public class ChannelSyncMenuBar extends JMenuBar implements ActionListener {
     }
 
 
-        private class VideoQualityDialog extends JDialog {
-            public VideoQualityDialog(Frame owner) {
-                super(owner, "Configure Quality Priority");
+
+    private class AboutThisProgramDialog extends JDialog {
+        public AboutThisProgramDialog(Frame owner) {
+            super(owner, "About Twitch Downloader");
 
 
+            ImageIcon logoIcon = new ImageIcon(TwitchToolsImages.getTwitchDownloadToolImage());
+            JLabel programNameVersionLabel = new JLabel("TwitchDownloader 0.1", logoIcon, JLabel.CENTER);
+            Font origFont = programNameVersionLabel.getFont().deriveFont(Font.BOLD);
+            programNameVersionLabel.setFont(origFont.deriveFont(30.0F));
+            programNameVersionLabel.setVerticalTextPosition(JLabel.BOTTOM);
+            programNameVersionLabel.setHorizontalTextPosition(JLabel.CENTER);
+            add(programNameVersionLabel);
+
+            setVisible(true);
+            pack();
+
+        }
+    }
+
+    private File showDestinationDirChooser(String path) {
+        JFileChooser fileChooser = null;
+        File file = null;
+        fileChooser = new JFileChooser(path);
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (fileChooser != null) {
+            int returnVal = fileChooser.showOpenDialog(this);
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                file = fileChooser.getSelectedFile();
             }
-
         }
-
-        private File showDestinationDirChooser(String path) {
-            JFileChooser fileChooser = null;
-            File file = null;
-            fileChooser = new JFileChooser(path);
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (fileChooser != null) {
-                int returnVal = fileChooser.showOpenDialog(this);
-
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    file = fileChooser.getSelectedFile();
-                }
-            }
-            return file;
-        }
+        return file;
+    }
 
 
-        public ChannelSyncMenuBar(ChannelSyncController controller, JFrame mainFrame) {
-            this.controller = controller;
-            this.prefs = TwitchToolPreferences.getInstance();
-            this.mainFrame = mainFrame;
-            this.settingsFolderDialog = new SettingsFolderDialog(mainFrame);
-            this.videoQualityDialog = new VideoQualityDialog(mainFrame);
+    public ChannelSyncMenuBar(ChannelSyncController controller, JFrame mainFrame) {
+        this.controller = controller;
+        this.prefs = TwitchToolPreferences.getInstance();
+        this.mainFrame = mainFrame;
+
+        mainFrame.setJMenuBar(this);
+
+        settingsMenu = new JMenu("Edit");
+        this.settingsFolderDialog = new SettingsFolderDialog(mainFrame);
+        destinationFolderMenuItem = new JMenuItem("Settings");
+        destinationFolderMenuItem.addActionListener(this);
+        settingsMenu.add(destinationFolderMenuItem);
+        add(settingsMenu);
+
+        viewMenu = new JMenu("View");
+        showProgressWindowsMenuItem = new JMenuItem("Log Window");
+        showProgressWindowsMenuItem.addActionListener(this);
+        viewMenu.add(showProgressWindowsMenuItem);
+        add(viewMenu);
+
+        helpMenu = new JMenu("Help");
+        showAboutDialogMenuItem = new JMenuItem("About");
+        showAboutDialogMenuItem.addActionListener(this);
+        helpMenu.add(showAboutDialogMenuItem);
+        this.aboutThisProgramDialog = new AboutThisProgramDialog(mainFrame);
+        add(helpMenu);
+    }
 
 
-            mainFrame.setJMenuBar(this);
-
-
-//            fileMenu = new JMenu("File");
-//            fileMenu.setMnemonic(KeyEvent.VK_F);
-//            fileMenu.getAccessibleContext().setAccessibleDescription("Not used yet");
-
-            viewMenu = new JMenu("View");
-            settingsMenu = new JMenu("Edit");
-
-            destinationFolderMenuItem = new JMenuItem("Settings");
-            destinationFolderMenuItem.addActionListener(this);
-            settingsMenu.add(destinationFolderMenuItem);
-            showProgressWindowsMenuItem = new JMenuItem("Log Window");
-            showProgressWindowsMenuItem.addActionListener(this);
-            viewMenu.add(showProgressWindowsMenuItem);
-//            qualityPriorityMenuItem = new JMenuItem("Video Quality");
-//            settingsMenu.add(qualityPriorityMenuItem);
-//            add(fileMenu);
-            add(settingsMenu);
-            add(viewMenu);
-        }
-
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == destinationFolderMenuItem) {
-                settingsFolderDialog.setVisible(true);
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == destinationFolderMenuItem) {
+            settingsFolderDialog.setVisible(true);
 //            } else if (e.getSource() == qualityPriorityMenuItem) {
 //                videoQualityDialog.setVisible(true);
-            } else if (e.getSource() == showProgressWindowsMenuItem) {
-                controller.progressFrameSetVisible(true);
-            }
+        } else if (e.getSource() == showProgressWindowsMenuItem) {
+            controller.progressFrameSetVisible(true);
+        } else if (e.getSource() == showAboutDialogMenuItem) {
+            aboutThisProgramDialog.setVisible(true);
         }
+    }
 
 
 

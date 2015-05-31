@@ -64,7 +64,7 @@ public class TwitchVideoInfo extends Observable {
     private Links links;
 
     @SerializedName("channel")
-    private Channel channel;
+    private TwitchChannel channel;
 
     private Image image;
 
@@ -208,29 +208,29 @@ public class TwitchVideoInfo extends Observable {
         public String channel;
     }
 
-    private class Channel {
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Channel channel = (Channel) o;
-
-            if (!name.equals(channel.name)) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return name.hashCode();
-        }
-
-        public String name;
-        @SerializedName("display_name")
-        public String displayName;
-    }
+//    private class Channel { //TODO remove this class
+//
+//        @Override
+//        public boolean equals(Object o) {
+//            if (this == o) return true;
+//            if (o == null || getClass() != o.getClass()) return false;
+//
+//            Channel channel = (Channel) o;
+//
+//            if (!name.equals(channel.name)) return false;
+//
+//            return true;
+//        }
+//
+//        @Override
+//        public int hashCode() {
+//            return name.hashCode();
+//        }
+//
+//        public String name;
+//        @SerializedName("display_name")
+//        public String displayName;
+//    }
 
     public void addPropertyChangeListenern(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
@@ -352,11 +352,11 @@ public class TwitchVideoInfo extends Observable {
     }
 
     public String getChannelDisplaylName() {
-        return channel.displayName;
+        return channel.getDisplayName();
     }
 
     public String getChannelName() {
-        return channel.name;
+        return channel.getName();
     }
 
     public TwitchDownloadInfo getDownloadInfo() throws IOException {
@@ -498,14 +498,14 @@ public class TwitchVideoInfo extends Observable {
     }
 
     public void setChannelName(String channelName) {
-        String oldChannelName = this.channel.name;
-        this.channel.name = channelName;
-        pcs.firePropertyChange("channelName", oldChannelName, this.channel.name);
+        String oldChannelName = this.channel.getName();
+        this.channel.setName(channelName);
+        pcs.firePropertyChange("channelName", oldChannelName, this.channel.getName());
     }
 
     public void setChannelDisplayname(String channelDisplayname) {
-        String oldChannelDisplayname = this.channel.displayName;
-        this.channel.displayName = channelDisplayname;
+        String oldChannelDisplayname = this.channel.getDisplayName();
+        this.channel.setDisplayName(channelDisplayname);
         pcs.firePropertyChange("channelDisplayname", oldChannelDisplayname, channelDisplayname);
     }
 

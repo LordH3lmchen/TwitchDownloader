@@ -17,6 +17,8 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 /**
+ * The MainPanel of the program. with a browser like look and feel
+ *
  * Created by Flo on 16.01.2015.
  */
 public class SyncChannelMainPanel extends JPanel implements PropertyChangeListener, ActionListener {
@@ -56,7 +58,7 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
         this.controller = controller;
         this.twitchVideoInfoList = twitchVideoInfoList;
         twitchVideoInfoList.addPropertyChangeListener(this);
-        this.searchResultItemPanels = new ArrayList<JPanel>();
+        this.searchResultItemPanels = new ArrayList<>();
         BorderLayout layout = new BorderLayout();
         setLayout(layout);
 
@@ -186,11 +188,6 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
 
     }
 
-
-    public void addVodItemComponent(Component comp) {
-        add(comp);
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals("contentUpdate"))
@@ -206,7 +203,7 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
             for(JPanel searchResultItemPanel: searchResultItemPanels) {
                 searchResultPanel.remove(searchResultItemPanel);
             }
-            this.searchResultItemPanels = new ArrayList<JPanel>();
+            this.searchResultItemPanels = new ArrayList<>();
         }
         for(TwitchVideoInfo twitchVideoInfo: twitchVideoInfoList.getTwitchVideoInfos()) {
             VideoInfoPanel videoInfoPanel = null;
@@ -277,7 +274,4 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
         return convertProgressPanel;
     }
 
-    public void downloadAllBtnSetEnabled(boolean x) {
-        downloadAllBtn.setEnabled(x);
-    }
 }

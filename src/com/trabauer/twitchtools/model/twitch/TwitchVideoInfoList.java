@@ -338,6 +338,10 @@ public class TwitchVideoInfoList {
         return selectedVideos;
     }
 
+    public TwitchVideoInfo get(int index) {
+        return twitchVideoInfos.get(index);
+    }
+
 }
 
 

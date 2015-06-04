@@ -39,7 +39,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     public static final String VERSION_INFO_URL_STR = "http://trabauer.com/downloads/TwitchVodLoaderInfo.txt";
     public static final String PROGRAM_DOWNLOAD_URL_STR = "http://trabauer.com/downloads/TwitchVodLoader.jar";
     public static final String PROJECT_PAGE_URL_STR = "http://lordh3lmchen.github.io/TwitchDownloader/";
-    public static final String PROGRAM_VERSION = "TwitchVodLoader 0.1";
+    public static final String PROGRAM_VERSION = "TwitchVodDownloader 0.2";
 
     private final JFrame mainFrame;
     private final SyncChannelMainPanel mainPanel;
@@ -107,7 +107,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
 
-        checkForUpdates();
+        //checkForUpdates();
 
 
     }
@@ -167,6 +167,12 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         for(TwitchVideoInfo tvi: twitchVideoInfoList.getTwitchVideoInfos()) { //Search related file on disk
             searchLocalFiles(tvi);
         }
+
+        if(twitchVideoInfoList.get(0).getChannel().getStream().isOnline() && pastBroadcasts) {
+            twitchVideoInfoList.get(0).setState(TwitchVideoInfo.State.LIVE);
+        }
+
+
     }
 
 

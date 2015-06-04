@@ -37,7 +37,8 @@ public class TwitchVideoInfo extends Observable {
         SELECTED_FOR_CONVERT,
         QUEUED_FOR_CONVERT,
         CONVERTING,
-        CONVERTED
+        CONVERTED,
+        LIVE // this broadcast is currently live
     }
 
 
@@ -585,7 +586,11 @@ public class TwitchVideoInfo extends Observable {
         return streamInformation;
     }
 
+    public TwitchChannel getChannel() {
+        return channel;
+    }
 
-
-
+    public void setChannel(TwitchChannel channel) {
+        this.channel = channel;
+    }
 }

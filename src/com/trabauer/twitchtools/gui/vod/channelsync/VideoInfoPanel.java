@@ -12,6 +12,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
@@ -46,6 +47,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
     private final JLabel linkToTwitchLbl;
     private final JLabel dateLbl;
     private final JLayeredPane previewImageLayeredPane;
+    private final JLabel darkBarkLbl;
 
 
     // Borders
@@ -80,6 +82,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         viewcountLbl = new JLabel(String.format("%d views", relatedTwitchVideoInfoObject.getViews()));
         viewcountLbl.setForeground(Color.WHITE);
         viewcountLbl.setBackground(new Color(0,0,0,0));
+        darkBarkLbl = new JLabel();
         original = viewcountLbl.getFont();
         viewcountLbl.setFont(original.deriveFont(Font.BOLD));
 
@@ -170,6 +173,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
 
         downloadBtn = new JButton("Download");
         downloadBtn.addActionListener(this);
+        downloadBtn.setActionCommand("download");
 
         playBtn = new JButton("Play");
         playBtn.setActionCommand("watchVideo");
@@ -207,7 +211,6 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         durationLbl.setBounds(5,0,310,25);
         durationLbl.setHorizontalAlignment(SwingConstants.RIGHT);
         //Adding a dark bar to the previewImage to increase the readability of the viewcount and duration
-        JLabel darkBarkLbl = new JLabel();
         darkBarkLbl.setBounds(0,0,320,25);
         darkBarkLbl.setBackground(new Color(0, 0, 0, 80));
         darkBarkLbl.setOpaque(true);
@@ -324,8 +327,15 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
     @Override
     public void actionPerformed(ActionEvent e)  {
         if(e.getSource()== downloadBtn) {
-            System.out.println("DownloadBtn of " + relatedTwitchVideoInfoObject.getTitle() + " pressed");
+            if(e.getActionCommand().equals("download")) {
                 controller.downloadTwitchVideo(relatedTwitchVideoInfoObject);
+            } else if(e.getActionCommand().equals("watchLive")) {
+                try {
+                    controller.openUrlInBrowser(new URL("http://twitch.tv/" + relatedTwitchVideoInfoObject.getChannelName()));
+                } catch (MalformedURLException e1) {
+                    e1.printStackTrace();
+                }
+            }
         } else if(e.getSource() == convertBtn) {
             controller.convert2mp4(this.relatedTwitchVideoInfoObject);
         } else if(e.getSource() == playBtn) {
@@ -383,6 +393,8 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
             } else if(evt.getPropertyName().equals("state")) {
                 TwitchVideoInfo.State currentState = (TwitchVideoInfo.State) evt.getNewValue();
                 changeLookAndFeelBasedOnState(currentState);
+            } else if(evt.getPropertyName().equals("title")) {
+                titleLbl.setText(relatedTwitchVideoInfoObject.getTitle());
             }
     }
 
@@ -424,6 +436,23 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         }
         if(currentState.equals(TwitchVideoInfo.State.INITIAL)) {
             setInitialLayout();
+        }
+        if(currentState.equals(TwitchVideoInfo.State.LIVE)) {
+            setInitialLayout();
+            int viewers = 0;
+            try {
+                viewers = relatedTwitchVideoInfoObject.getChannel().getStream().getViewers();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            downloadBtn.setText("Watch Live");
+            downloadBtn.setActionCommand("watchLive");
+            durationLbl.setText("LIVE");
+            viewcountLbl.setText(String.format("%d viewers", viewers));
+            darkBarkLbl.setBackground(new Color(255,0,0,80));
+            markForBatchCheckbo.setVisible(false);
+
+
         }
 
 

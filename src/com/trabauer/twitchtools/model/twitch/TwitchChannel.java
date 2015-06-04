@@ -82,6 +82,8 @@ public class TwitchChannel {
     @SerializedName("_links") private HashMap<String,String> links;
     //implemented as HashMap to avoid problems when Twitch decides to expand the Links
 
+    private TwitchStream stream;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -323,5 +325,16 @@ public class TwitchChannel {
 
     public void setLinks(HashMap<String, String> links) {
         this.links = links;
+    }
+
+    public TwitchStream getStream() throws IOException {
+        if(stream == null) {
+            stream = TwitchStream.getTwitchStreamFromAPI(this.name);
+        }
+        return stream;
+    }
+
+    public void setStream(TwitchStream stream) {
+        this.stream = stream;
     }
 }

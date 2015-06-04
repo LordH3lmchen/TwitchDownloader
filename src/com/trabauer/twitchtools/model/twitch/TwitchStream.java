@@ -140,55 +140,91 @@ public class TwitchStream {
 
 //    @SerializedName("_id") int id;
     public long getId() {
+        if(stream == null) {
+            return -1;
+        }
         return stream.id;
     }
 
     public void setId(int id) {
+        if(stream == null) {
+            this.stream = new InternalStream();
+        }
         this.stream.id = id;
     }
 
 //    @SerializedName("game") String game;
     public String getGame() {
+        if(stream == null) {
+            return null;
+        }
         return stream.game;
     }
 
     public void setGame(String game) {
+        if(stream == null) {
+            this.stream = new InternalStream();
+        }
         stream.game = game;
     }
 
 //    @SerializedName("viewers") int viewers;
     public int getViewers() {
+        if(stream == null) {
+            return -1;
+        }
         return stream.viewers;
     }
 
     public void setViewers(int viewers) {
+        if(stream == null) {
+            this.stream = new InternalStream();
+        }
         stream.viewers = viewers;
     }
 
 //    @SerializedName("created_at") String createdAt;
     public String getCreatedAt() {
+        if(stream == null) {
+            return null;
+        }
         return stream.createdAt;
     }
 
     public void setCreatedAt(String createdAt) {
+        if(stream == null) {
+            this.stream = new InternalStream();
+        }
         stream.createdAt = createdAt;
     }
 
 //    @SerializedName("video_height") int videoHeight;
     public int getVideoHeight () {
+        if(stream == null) {
+            return -1;
+        }
         return stream.videoHeight;
     }
 
     public void setVideoHeight(int videoHeight) {
+        if(stream == null) {
+            this.stream = new InternalStream();
+        }
         stream.videoHeight = videoHeight;
     }
 
 //    @SerializedName("average_fps") double averageFps;
     public double getAverageFps() {
+        if(stream == null) {
+            return -1;
+        }
         return stream.averageFps;
     }
 
     public void setAverageFps(double averageFps) {
+        if(stream == null) {
+            this.stream = new InternalStream();
+        }
         stream.averageFps = averageFps;
     }
 
@@ -197,16 +233,29 @@ public class TwitchStream {
         return stream.previewUrlStrings;
     }
 
-    public void setPreiviewUrlStrings (HashMap<String, String> previewUrlStrings) {
+    public void setPreviewUrlStrings (HashMap<String, String> previewUrlStrings) {
+        if(stream == null) {
+            this.stream = new InternalStream();
+        }
         stream.previewUrlStrings = previewUrlStrings;
     }
 
 //    @SerializedName("channel") TwitchChannel channel;
     public TwitchChannel getChannel() {
+        if(stream == null) {
+            return null;
+        }
         return stream.channel;
     }
 
     public void setChannel(TwitchChannel channel) {
+        if(stream == null) {
+            this.stream = new InternalStream();
+        }
         this.stream.channel = channel;
+    }
+
+    public boolean isOnline() {
+        return stream != null;
     }
 }

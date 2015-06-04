@@ -15,7 +15,7 @@ public interface ChannelSyncControllerInterface extends ActionListener, Property
 
     public JPanel getMainPanel();
 
-    void searchFldText(String text) throws IOException;
+    void searchFldText(String text, boolean pastBroadcasts) throws IOException;
 
     void openUrlInBrowser(URL url);
 

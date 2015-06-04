@@ -142,7 +142,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     }
 
     @Override
-    public void searchFldText(String text) throws IOException {
+    public void searchFldText(String text, boolean pastBroadcasts) throws IOException {
 
         ArrayList<TwitchVideoInfo> cachedTVIs = new ArrayList<>();
 
@@ -163,7 +163,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             }
         }
 
-        twitchVideoInfoList.update(text, true, 40, 0, cachedTVIs); //Updates Videos Except new
+        twitchVideoInfoList.update(text, pastBroadcasts, 40, 0, cachedTVIs); //Updates Videos Except new
         for(TwitchVideoInfo tvi: twitchVideoInfoList.getTwitchVideoInfos()) { //Search related file on disk
             searchLocalFiles(tvi);
         }
@@ -331,7 +331,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             String quality = currentTwitchVideoInfo.getDownloadInfo().getPreferedQuality(TwitchToolPreferences.getQualityOrder()); //select quality based on TwitchToolsPreferences
             videoParts = currentTwitchVideoInfo.getDownloadInfo().getTwitchBroadcastParts(quality); //get the Parts of a Video
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); //TODO JDialog Output
+            JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
         mainPanel.getDownloadProgressPanel().setMaximum(videoParts.size() * 100);
         mainPanel.getDownloadProgressPanel().setValue(0);

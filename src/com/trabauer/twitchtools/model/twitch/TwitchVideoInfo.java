@@ -208,30 +208,6 @@ public class TwitchVideoInfo extends Observable {
         public String channel;
     }
 
-//    private class Channel { //TODO remove this class
-//
-//        @Override
-//        public boolean equals(Object o) {
-//            if (this == o) return true;
-//            if (o == null || getClass() != o.getClass()) return false;
-//
-//            Channel channel = (Channel) o;
-//
-//            if (!name.equals(channel.name)) return false;
-//
-//            return true;
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//            return name.hashCode();
-//        }
-//
-//        public String name;
-//        @SerializedName("display_name")
-//        public String displayName;
-//    }
-
     public void addPropertyChangeListenern(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
     }
@@ -266,6 +242,8 @@ public class TwitchVideoInfo extends Observable {
     }
 
     public void update(TwitchVideoInfo tvi) {
+        if(this.channel == null) this.channel = new TwitchChannel();
+        if(this.links == null) this.links = new Links();
         setTitle(tvi.title);
         setDescription(tvi.description);
         setBroadcastId(tvi.broadcastId);
@@ -403,7 +381,7 @@ public class TwitchVideoInfo extends Observable {
             Scanner qualityPlaylistSc = new Scanner(qualityPlaylistIs);
             while (qualityPlaylistSc.hasNextLine()) {
                 String line = qualityPlaylistSc.nextLine();
-                System.out.println(line);
+//                System.out.println(line);
                 if (!Pattern.matches("^#.*$", line)) { //filter Out comment lines
                     String quality = line.split("/")[7];
                     URL playlistUrl = new URL(line);
@@ -416,8 +394,8 @@ public class TwitchVideoInfo extends Observable {
                         if (partLine.isEmpty())
                             continue;
                         if (!Pattern.matches("^#.*$", partLine)) { // filter out Comments
-                            partLine = line.replace("index-dvr.m3u8", "").concat(partLine);
-//                            this.addTwitchVideoPart(quality, new TwitchVideoPart(new URL(partLine), partNumber++));
+                            String m3uFilename = new File(playlistUrl.getFile()).getName();
+                            partLine = line.replace(m3uFilename, "").concat(partLine);
                             TwitchVideoPart tbp = new TwitchVideoPart(partLine, -1, null , null);
                             if(quality.equals("chunked")) dlInfo.addSourceTwitchBroadcastPart(tbp);
                             else if(quality.equals("high")) dlInfo.addHighTwitchBroadcastPart(tbp);

@@ -2,6 +2,7 @@ package com.trabauer.twitchtools.tests;
 
 import com.trabauer.twitchtools.model.twitch.TwitchChannel;
 import com.trabauer.twitchtools.model.twitch.TwitchStream;
+import com.trabauer.twitchtools.model.twitch.TwitchVideoInfo;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class TwitchApiTests {
     public void streamTest() {
         TwitchStream takeTvStream = null;
         try {
-            takeTvStream = TwitchStream.getTwitchStream("taketv");
+            takeTvStream = TwitchStream.getTwitchStreamFromAPI("taketv");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,11 +40,23 @@ public class TwitchApiTests {
 //        cryaotic
         TwitchStream cryaoticStream = null;
         try {
-            cryaoticStream = TwitchStream.getTwitchStream("cryaotic");
+            cryaoticStream = TwitchStream.getTwitchStreamFromAPI("cryaotic");
         } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println(cryaoticStream);
 
+    }
+
+    @Test
+    public void highlightTest() {
+        TwitchVideoInfo tvi = new TwitchVideoInfo();
+        try {
+            tvi.update("v5724050");
+            tvi.getDownloadInfo();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(tvi);
     }
 }

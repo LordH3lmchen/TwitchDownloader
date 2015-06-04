@@ -42,6 +42,8 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
     private final JPanel bottomPanel;
     private final JButton downloadAllBtn;
     private final JButton selectMostRecentBtn;
+    private final JRadioButton highlightRadioBtn;
+    private final JRadioButton pastBroadcastsRadioBtn;
     private final JSpinner recentDaysSpinner;
     private final JLabel daysLabel;
     private OverallProgressPanel downloadProgressPanel;
@@ -69,6 +71,17 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
         downloadAllBtn.addActionListener(this);
         loadMoreBtn = new JButton("load more ... ");
         loadMoreBtn.addActionListener(this);
+
+        highlightRadioBtn = new JRadioButton("Highlights");
+        pastBroadcastsRadioBtn = new JRadioButton("Past Broadcasts");
+        ButtonGroup vodTypeBtnGroup = new ButtonGroup();
+        vodTypeBtnGroup.add(highlightRadioBtn);
+        vodTypeBtnGroup.add(pastBroadcastsRadioBtn);
+        pastBroadcastsRadioBtn.setSelected(true);
+        highlightRadioBtn.addActionListener(this);
+        pastBroadcastsRadioBtn.addActionListener(this);
+
+
         selectMostRecentBtn = new JButton("Select most Recent");
 //        selectMostRecentBtn.setEnabled(false);
         selectMostRecentBtn.addActionListener(this);
@@ -117,6 +130,12 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
 
         c.weightx = 0.0;
         c.gridx = 2;
+        channelInputPanel.add(highlightRadioBtn, c);
+
+        c.gridx++;
+        channelInputPanel.add(pastBroadcastsRadioBtn, c);
+
+        c.gridx++;
         channelInputPanel.add(channelInputBtn, c);
 
 
@@ -138,9 +157,6 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
 
         c.gridy++;
         bottomPanel.add(convertProgressPanel, c);
-
-
-
 
         c.gridx=0;
         c.gridy++;
@@ -236,7 +252,7 @@ public class SyncChannelMainPanel extends JPanel implements PropertyChangeListen
 
         if (e.getSource() == channelInputBtn || e.getSource() == channelInputFld) {
             try {
-                controller.searchFldText(channelInputFld.getText());
+                controller.searchFldText(channelInputFld.getText(), pastBroadcastsRadioBtn.isSelected());
             } catch (MalformedURLException e1) {
                 JOptionPane.showMessageDialog(this, "Weird Channel Input " + channelInputFld.getText() + " isn't a valid channel name", "Invalid channel namen", JOptionPane.ERROR_MESSAGE);
                 e1.printStackTrace();

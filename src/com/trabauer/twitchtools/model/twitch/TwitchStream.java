@@ -107,8 +107,15 @@ public class TwitchStream {
         return result;
     }
 
-
-    public static TwitchStream getTwitchStream(String channelName) throws IOException {
+    /**
+     * Creates a TwitchStream object from https://api.twitch.tv/kraken/channels/channelname
+     *
+     *
+     * @param channelName
+     * @return
+     * @throws IOException
+     */
+    public static TwitchStream getTwitchStreamFromAPI(String channelName) throws IOException {
         URL streamApiURL = new URL(APIURL + channelName);
         InputStream is = streamApiURL.openStream();
         InputStreamReader ir = new InputStreamReader(is);

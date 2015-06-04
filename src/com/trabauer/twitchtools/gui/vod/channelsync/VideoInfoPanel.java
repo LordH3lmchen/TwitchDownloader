@@ -235,7 +235,6 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         c.insets = new Insets(2, 2, 2, 2);
         c.gridy++;
         c.gridwidth=2;
-        // title.           //TODO limit width
         add(titleLbl, c);
         titleLbl.setMinimumSize(new Dimension(300, 20));
         titleLbl.setMaximumSize(new Dimension(300, 100));

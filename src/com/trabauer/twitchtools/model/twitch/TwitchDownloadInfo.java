@@ -84,7 +84,13 @@ public class TwitchDownloadInfo {
     }
 
 
-    class Chunks {  //TODO maybe anyone has a solution to replace that with a Hashmap (Twitch could change the names of qualities from time to time)
+    class Chunks {
+    // maybe anyone has a better solution to replace that with a Hashmap (Twitch could change the names
+    // of qualities from time to time)
+
+    // no need for a better solution. Twitch changed VODs entirely. This ist still remaining to be compatible
+    // to old VODs
+
         @SerializedName("live")private ArrayList<TwitchVideoPart> source;
         @SerializedName("240p")private ArrayList<TwitchVideoPart> mobile;
         @SerializedName("360p")private ArrayList<TwitchVideoPart> low;

@@ -265,7 +265,7 @@ public class ChannelSyncMenuBar extends JMenuBar implements ActionListener {
             if(e.getSource()==closeBtn) {
                 this.setVisible(false);
             } else if(e.getSource()==licenseBtn) {
-                this.setVisible(false); //TODO show license instead
+                this.setVisible(false);
             }
         }
     }

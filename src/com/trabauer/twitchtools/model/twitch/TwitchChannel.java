@@ -64,7 +64,7 @@ public class TwitchChannel {
 //    "url":"http://www.twitch.tv/taketv",
     @SerializedName("url") private String urlString;
 //    "views":84951781,
-    @SerializedName("views") private int urls;
+    @SerializedName("views") private int views;
 //    "followers":81522,
     @SerializedName("followers") private int followers;
 //    "_links":{
@@ -303,12 +303,12 @@ public class TwitchChannel {
         this.urlString = urlString;
     }
 
-    public int getUrls() {
-        return urls;
+    public int getViews() {
+        return views;
     }
 
-    public void setUrls(int urls) {
-        this.urls = urls;
+    public void setViews(int views) {
+        this.views = views;
     }
 
     public int getFollowers() {

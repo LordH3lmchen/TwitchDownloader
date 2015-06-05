@@ -62,7 +62,7 @@ public class TwitchVideoInfo extends Observable {
     private int    views;
 
     @SerializedName("_links")
-    private Links links;
+    private HashMap<String, String> links;
 
     @SerializedName("channel")
     private TwitchChannel channel;
@@ -78,6 +78,24 @@ public class TwitchVideoInfo extends Observable {
 
     protected PropertyChangeSupport pcs;
 
+
+    public TwitchVideoInfo() {
+        this.pcs = new PropertyChangeSupport(this);
+        dlInfoNeedsUpdate = false;
+        this.state = State.INITIAL;
+        this.relatedFiles = new HashMap<>();
+    }
+
+    public static TwitchVideoInfo getTwitchVideoInfo(String id) throws IOException {
+        URL infoApiUrl = new URL(APIURL + "/kraken/videos/" +id);
+        InputStream is = infoApiUrl.openStream();
+        InputStreamReader ir = new InputStreamReader(is);
+        TwitchVideoInfo tvi = new Gson().fromJson(ir, TwitchVideoInfo.class);
+        ir.close();
+        is.close();
+        return tvi;
+    }
+
     public State getState() {
         return state;
     }
@@ -88,12 +106,7 @@ public class TwitchVideoInfo extends Observable {
         pcs.firePropertyChange("state", oldState, this.state);
     }
 
-    public TwitchVideoInfo() {
-        this.pcs = new PropertyChangeSupport(this);
-        dlInfoNeedsUpdate = false;
-        this.state = State.INITIAL;
-        this.relatedFiles = new HashMap<>();
-    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -182,33 +195,6 @@ public class TwitchVideoInfo extends Observable {
         relatedFiles.clear();
     }
 
-
-
-    private class Links {
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Links links = (Links) o;
-
-            if (channel != null ? !channel.equals(links.channel) : links.channel != null) return false;
-            if (self != null ? !self.equals(links.self) : links.self != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = self != null ? self.hashCode() : 0;
-            result = 31 * result + (channel != null ? channel.hashCode() : 0);
-            return result;
-        }
-
-        public String self;
-        public String channel;
-    }
-
     public void addPropertyChangeListenern(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
     }
@@ -233,18 +219,12 @@ public class TwitchVideoInfo extends Observable {
     }
 
     public void update(String id) throws IOException {
-        URL infoApiUrl = new URL(APIURL + "/kraken/videos/" +id);
-        InputStream is = infoApiUrl.openStream();
-        InputStreamReader ir = new InputStreamReader(is);
-        TwitchVideoInfo tvi = new Gson().fromJson(ir, TwitchVideoInfo.class);
-        ir.close();
-        is.close();
-        update(tvi);
+        update(getTwitchVideoInfo(id));
     }
 
     public void update(TwitchVideoInfo tvi) {
         if(this.channel == null) this.channel = new TwitchChannel();
-        if(this.links == null) this.links = new Links();
+        if(this.links == null) this.links = new HashMap<>();
         setTitle(tvi.title);
         setDescription(tvi.description);
         setBroadcastId(tvi.broadcastId);
@@ -323,11 +303,12 @@ public class TwitchVideoInfo extends Observable {
     }
 
     public String  getSelfLink() {
-        return links.self;
+        return links.get("self");
     }
 
+
     public String getChannelLink () {
-        return links.channel;
+        return links.get("channel");
     }
 
     public String getChannelDisplaylName() {
@@ -495,15 +476,15 @@ public class TwitchVideoInfo extends Observable {
     }
 
     public void setSelfLink(String selfLink) {
-        String oldSelfLink = this.links.self;
-        this.links.self = selfLink;
-        pcs.firePropertyChange("selfLink", oldSelfLink, this.links.self);
+        String oldSelfLink = this.links.get("self");
+        this.links.put("self",selfLink);
+        pcs.firePropertyChange("selfLink", oldSelfLink, this.links.get("self"));
     }
 
     public void setChannelLink(String channelLink) {
-        String oldChannelLink = this.links.channel;
-        this.links.channel = channelLink;
-        pcs.firePropertyChange("channelLink", oldChannelLink, this.links.channel);
+        String oldChannelLink = this.links.get("channel");
+        this.links.put("channel", channelLink);
+        pcs.firePropertyChange("channelLink", oldChannelLink, this.links.get("channel"));
     }
 
     public void setImage(Image image) {

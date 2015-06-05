@@ -31,6 +31,8 @@ import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 /**
+ * This is the main controller for this application. That handls operations between the models and the views.
+ *
  * Created by Flo on 20.01.2015.
  */
 public class ChannelSyncController implements ChannelSyncControllerInterface {
@@ -107,27 +109,27 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
 
-        //checkForUpdates();
+        checkForUpdates();
 
 
     }
 
     private void checkForUpdates() {
-        URL VersionInfoUrl = null;
         try {
-            VersionInfoUrl= new URL(VERSION_INFO_URL_STR);
+            URL VersionInfoUrl = new URL(VERSION_INFO_URL_STR);
             InputStream is = VersionInfoUrl.openStream();
             Scanner sc = new Scanner(is);
             String line = null;
             if(sc.hasNextLine()) line = sc.nextLine();
-            if(! line.equals(PROGRAM_VERSION)) {
-                System.out.println("Program isn't up to date. ");
-                int choice = JOptionPane.showConfirmDialog(mainFrame, "Update Available! Download latest Version?", "Update Available!", JOptionPane.YES_NO_OPTION);
-                if (choice == 0) { //YES
-                    openUrlInBrowser(new URL(PROJECT_PAGE_URL_STR));
-                } //else if(choice == 0) { //NO
-                // Nothing right now
-                //}
+            if (line != null) {
+                if(! line.equals(PROGRAM_VERSION)) {
+                    int choice = JOptionPane.showConfirmDialog(mainFrame, "Update Available! Download latest Version?", "Update Available!", JOptionPane.YES_NO_OPTION);
+                    if (choice == 0) { //YES
+                        openUrlInBrowser(new URL(PROJECT_PAGE_URL_STR));
+                    } //else if(choice == 0) { //NO
+                    // Nothing right now
+                    //}
+                }
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -231,9 +233,9 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     public void openUrlInBrowser(URL url) {
         try {
             Desktop.getDesktop().browse(url.toURI());
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } catch (URISyntaxException e) {
+            JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException e) {
             JOptionPane.showMessageDialog(mainPanel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
 
@@ -299,7 +301,8 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         }
 
 
-        FFMpegConverterWorker ffMpegConverterWorker = new FFMpegConverterWorker(destinationVideoFile, ffmpegFileListFile, ffmpegCommand, ffmpegOptions);
+        FFMpegConverterWorker ffMpegConverterWorker;
+        ffMpegConverterWorker = new FFMpegConverterWorker(destinationVideoFile, ffmpegFileListFile, ffmpegCommand, ffmpegOptions);
         ffMpegConverterWorker.setVideoLength(relatedTwitchVideoInfoObject.getLength());
         ffMpegConverterWorker.setRelatedTwitchVideoInfo(relatedTwitchVideoInfoObject);
         ffMpegConverterWorker.addPropertyChangeListener(this);
@@ -376,7 +379,10 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     private void createPlaylistsFolder() {
         File playlistsFolder = new File(TwitchToolPreferences.getInstance().get(TwitchToolPreferences.DESTINATION_DIR_PREFKEY, OsUtils.getUserHome())+"/playlists");
         if(! playlistsFolder.exists()) {
-            playlistsFolder.mkdirs();
+            boolean mkdirs = playlistsFolder.mkdirs();
+            if(mkdirs == false) {
+                JOptionPane.showConfirmDialog(mainFrame, "Unable to create folder for playlists in " + playlistsFolder.getParent() + " make shure you have write access to that directory.", "Unable to create playist folder!", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -406,9 +412,6 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
                             videoParts.size(),
                             videoPart.getUrl()));
                 }
-            } else if(evt.getPropertyName().equals("progress")) {
-                int oldProgress = (int)evt.getOldValue();
-                int newProgress = (int)evt.getNewValue();
             }
 
         } else if(evt.getSource() instanceof FFMpegConverterWorker) {

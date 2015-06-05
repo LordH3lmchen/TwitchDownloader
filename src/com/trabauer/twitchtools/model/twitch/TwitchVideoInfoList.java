@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -46,25 +47,8 @@ public class TwitchVideoInfoList {
 //    @SerializedName("_total")
 //    private int size;
     @SerializedName("_links")
-    private Links links;
+    private HashMap<String, String> links;
 
-    class Links {
-        public String self;
-        public String next;
-
-        public Links() {
-            this.self = null;
-            this.next = null;
-        }
-
-        @Override
-        public String toString() {
-            return "Links{" +
-                    "self='" + self + '\'' +
-                    ", next='" + next + '\'' +
-                    '}';
-        }
-    }
 
 
     @SerializedName("videos")
@@ -192,8 +176,6 @@ public class TwitchVideoInfoList {
             urlStr = urlStr.concat(joinedParameters);
         }
         update(new URL(urlStr), cachedTVIs);
-
-
     }
 
     /**
@@ -216,19 +198,19 @@ public class TwitchVideoInfoList {
 
 
     public URL getSelfUrl() throws MalformedURLException {
-        return new URL(links.self);
+        return new URL(links.get("self"));
     }
 
     public URL getNextUrl() throws MalformedURLException {
-        return new URL(links.next);
+        return new URL(links.get("next"));
     }
 
     public String getNextUrlString() {
-        return this.links.next;
+        return this.links.get("next");
     }
 
     public String getSelfUrlString() {
-        return this.links.self;
+        return this.links.get("self");
     }
 
 
@@ -241,20 +223,17 @@ public class TwitchVideoInfoList {
     }
 
     public void setNextUrl(String nextUrl) {
-        if(this.links==null) this.links = new Links();
-        String oldNext;
-        if(links.next==null) oldNext = null;
-        else oldNext = this.links.next;
-        this.pcs.firePropertyChange("nextUrl", oldNext, this.links.next=nextUrl);
+        if(this.links==null) this.links = new HashMap<>();
+        String oldNext = links.get("next");
+        links.put("next", nextUrl);
+        this.pcs.firePropertyChange("nextUrl", oldNext, links.get("next"));
     }
 
     public void setSelfUrl(String selfUrl) {
-        if(this.links==null) this.links = new Links();
-        String oldSelf;
-        if(this.links.self==null) oldSelf=null;
-        else oldSelf=this.links.self;
-        this.links.self = selfUrl;
-        this.pcs.firePropertyChange("selfUrl", oldSelf, this.links.self);
+        if(this.links==null) this.links = new HashMap<>();
+        String oldSelf = links.get("self");
+        this.links.put("self", selfUrl);
+        this.pcs.firePropertyChange("selfUrl", oldSelf, this.links.get("self"));
     }
 
     private void setTwitchVideoInfos(ArrayList<TwitchVideoInfo> twitchVideoInfos) {
@@ -263,16 +242,12 @@ public class TwitchVideoInfoList {
         this.pcs.firePropertyChange("twitchVideoInfos", oldTwitchVideoInfos, this.twitchVideoInfos);
     }
 
-    public Links getLinks() {
+    public HashMap<String, String> getLinks() {
         return links;
     }
 
-    public void setLinks(Links links) {
-        if(this.links == null) {
-            this.links = new Links();
-        }
-        setNextUrl(links.next);
-        setSelfUrl(links.self);
+    public void setLinks(HashMap<String, String> links) {
+        this.links = links;
     }
 
     public void addTwitchVideoInfo(TwitchVideoInfo tvi) {

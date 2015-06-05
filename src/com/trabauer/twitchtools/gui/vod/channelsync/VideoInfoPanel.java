@@ -77,6 +77,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
             title = title.concat("...");
         }
         titleLbl = new JLabel(title);
+        titleLbl.setToolTipText(relatedTwitchVideoInfoObject.getTitle());
         Font original = titleLbl.getFont();
         titleLbl.setFont(original.deriveFont(Font.BOLD, 14.0F));
         viewcountLbl = new JLabel(String.format("%d views", relatedTwitchVideoInfoObject.getViews()));

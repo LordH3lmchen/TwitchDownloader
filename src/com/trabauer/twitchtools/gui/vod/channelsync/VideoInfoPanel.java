@@ -96,6 +96,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         durationLbl.setForeground(Color.WHITE);
 
         imageLbl = new JLabel();
+        imageLbl.setToolTipText(relatedTwitchVideoInfoObject.getTitle());
 
         if(relatedTwitchVideoInfoObject.getPreviewImage()!=null) {
             addImageToThis();

@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="TrabauerComWebServer" preserveTimestamps="false">
-    <serverData>
-      <paths name="TrabauerComWebServer">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/" local="$PROJECT_DIR$/out/artifacts/TwitchTools_jar" web="/downloads" />
-          </mappings>
-        </serverdata>
-      </paths>
-    </serverData>
-  </component>
+  <component name="PublishConfigData" serverName="TrabauerComWebServer" preserveTimestamps="false" />
 </project>

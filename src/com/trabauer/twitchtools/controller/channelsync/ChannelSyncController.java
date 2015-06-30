@@ -102,7 +102,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
                 System.out.println("Running on a Unix System");
                 ffmpegCommand = "ffmpeg";
             } else {
-                System.out.println("unknown OS asuming ffmpeg is installed and can be accessed via path-variable");
+                System.out.println("unknown OS assuming ffmpeg is installed and can be accessed via path-variable");
                 ffmpegCommand = "ffmpeg";
             }
         } catch (URISyntaxException e) {

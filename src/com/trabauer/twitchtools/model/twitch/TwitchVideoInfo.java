@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -367,32 +368,70 @@ public class TwitchVideoInfo extends Observable {
                 if (!Pattern.matches("^#.*$", line)) { //filter Out comment lines
                     String quality = line.split("/")[7];
                     URL playlistUrl = new URL(line);
+                    String m3uFilename = new File(playlistUrl.getFile()).getName();
                     InputStream playlistIs = playlistUrl.openStream();
                     Scanner playlistSc = new Scanner(playlistIs);
-                    int partNumber = 0;
+                    Pattern partFileNameStringPattern = Pattern.compile("^(index-\\d{10}-\\w{4}\\.ts)\\?start_offset=(\\d+)&end_offset=(\\d+)$");
+                    String previousPartFileName = null;
+                    int startOffset = 0;
+                    int endOffset = 0;
+// TODO Test the new playlist parsing.
                     while (playlistSc.hasNextLine()) {
                         String partLine = playlistSc.nextLine();
 //                        System.out.println(partLine);
                         if (partLine.isEmpty())
                             continue;
-                        if (!Pattern.matches("^#.*$", partLine)) { // filter out Comments
-                            String m3uFilename = new File(playlistUrl.getFile()).getName();
-                            partLine = line.replace(m3uFilename, "").concat(partLine);
-                            TwitchVideoPart tbp = new TwitchVideoPart(partLine, -1, null , null);
-                            if(quality.equals("chunked")) dlInfo.addSourceTwitchBroadcastPart(tbp);
-                            else if(quality.equals("high")) dlInfo.addHighTwitchBroadcastPart(tbp);
-                            else if(quality.equals("medium")) dlInfo.addMediumTwitchBroadcastPart(tbp);
-                            else if(quality.equals("low")) dlInfo.addLowTwitchBroadcastPart(tbp);
-                            else if(quality.equals("mobile")) dlInfo.addMobileTwitchBroadcastPart(tbp);
+                        Matcher m = partFileNameStringPattern.matcher(partLine);
+                        if (m.matches()) {
+                            if(previousPartFileName == null) { //First File
+                                previousPartFileName = m.group(1);
+                                endOffset = Integer.parseInt(m.group(3));
+                                startOffset = Integer.parseInt(m.group(2));
+                                continue;
+                            }
+                            if(m.group(1).equals(previousPartFileName)) {
+                                if(endOffset < Integer.parseInt(m.group(3)))
+                                    endOffset = Integer.parseInt(m.group(3));
+                                if(startOffset > Integer.parseInt(m.group(2)))
+                                    startOffset = Integer.parseInt(m.group(3));
+                                continue;
+                            } else { // currentPartFileName != previousPartFileName
+                                //insert previous partFileName with improved offset
+                                String partURL = String.format("%s%s?start_offset=%d&end_offset=%d",
+                                        line.replace(m3uFilename, ""),
+                                        previousPartFileName,
+                                        startOffset,
+                                        endOffset);
+                                System.out.println(partURL);
+                                TwitchVideoPart tbp = new TwitchVideoPart(partURL, -1, null , null);
+                                if(quality.equals("chunked")) dlInfo.addSourceTwitchBroadcastPart(tbp);
+                                else if(quality.equals("high")) dlInfo.addHighTwitchBroadcastPart(tbp);
+                                else if(quality.equals("medium")) dlInfo.addMediumTwitchBroadcastPart(tbp);
+                                else if(quality.equals("low")) dlInfo.addLowTwitchBroadcastPart(tbp);
+                                else if(quality.equals("mobile")) dlInfo.addMobileTwitchBroadcastPart(tbp);
+                                //update variables with new part
+                                previousPartFileName = m.group(1);
+                                startOffset = Integer.parseInt(m.group(2));
+                                endOffset = Integer.parseInt(m.group(3));
+                            }
                         }
                     }
+
+                    //insert last part
+                    String partURL = String.format("%s%s?start_offset=%d&end_offset=%d",
+                            line.replace(m3uFilename, ""),
+                            previousPartFileName,
+                            startOffset,
+                            endOffset);
+                    System.out.println(partURL);
+                    TwitchVideoPart tbp = new TwitchVideoPart(partURL, -1, null , null);
+                    if(quality.equals("chunked")) dlInfo.addSourceTwitchBroadcastPart(tbp);
+                    else if(quality.equals("high")) dlInfo.addHighTwitchBroadcastPart(tbp);
+                    else if(quality.equals("medium")) dlInfo.addMediumTwitchBroadcastPart(tbp);
+                    else if(quality.equals("low")) dlInfo.addLowTwitchBroadcastPart(tbp);
+                    else if(quality.equals("mobile")) dlInfo.addMobileTwitchBroadcastPart(tbp);
                 }
             }
-
-
-
-
-
             dlInfoNeedsUpdate = false;
         }
     }

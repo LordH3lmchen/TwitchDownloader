@@ -41,7 +41,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
     public static final String VERSION_INFO_URL_STR = "http://trabauer.com/downloads/TwitchVodLoaderInfo.txt";
     public static final String PROGRAM_DOWNLOAD_URL_STR = "http://trabauer.com/downloads/TwitchVodLoader.jar";
     public static final String PROJECT_PAGE_URL_STR = "http://lordh3lmchen.github.io/TwitchDownloader/";
-    public static final String PROGRAM_VERSION = "TwitchVodDownloader 0.2";
+    public static final String PROGRAM_VERSION = "TwitchVodDownloader 0.3";
 
     private final JFrame mainFrame;
     private final SyncChannelMainPanel mainPanel;

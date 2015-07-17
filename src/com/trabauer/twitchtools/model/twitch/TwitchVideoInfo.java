@@ -359,7 +359,8 @@ public class TwitchVideoInfo extends Observable {
             tokenIs.close();
 
             // URLEncoder is used to encode the Token(JSON) to a valid URL
-            URL qualityPlaylistUrl = new URL("http://usher.twitch.tv/vod/" + idNr + "?nauth=" + URLEncoder.encode(vodAccessToken.getToken(), "UTF-8") + "&nauthsig=" + vodAccessToken.getSig());
+//            URL qualityPlaylistUrl = new URL("http://usher.twitch.tv/vod/" + idNr + "?nauth=" + URLEncoder.encode(vodAccessToken.getToken(), "UTF-8") + "&nauthsig=" + vodAccessToken.getSig()); Twitch changed something source download doesn work with that request
+            URL qualityPlaylistUrl = new URL("http://usher.twitch.tv/vod/" + idNr + "?player=twitchweb&allow_source=true&nauth=" + URLEncoder.encode(vodAccessToken.getToken(), "UTF-8") + "&nauthsig=" + vodAccessToken.getSig());
             InputStream qualityPlaylistIs = qualityPlaylistUrl.openStream();
             Scanner qualityPlaylistSc = new Scanner(qualityPlaylistIs);
             while (qualityPlaylistSc.hasNextLine()) {

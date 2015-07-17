@@ -402,7 +402,7 @@ public class TwitchVideoInfo extends Observable {
                                         previousPartFileName,
                                         startOffset,
                                         endOffset);
-                                System.out.println(partURL);
+//                                System.out.println(partURL);
                                 TwitchVideoPart tbp = new TwitchVideoPart(partURL, -1, null , null);
                                 if(quality.equals("chunked")) dlInfo.addSourceTwitchBroadcastPart(tbp);
                                 else if(quality.equals("high")) dlInfo.addHighTwitchBroadcastPart(tbp);
@@ -423,7 +423,7 @@ public class TwitchVideoInfo extends Observable {
                             previousPartFileName,
                             startOffset,
                             endOffset);
-                    System.out.println(partURL);
+//                    System.out.println(partURL);
                     TwitchVideoPart tbp = new TwitchVideoPart(partURL, -1, null , null);
                     if(quality.equals("chunked")) dlInfo.addSourceTwitchBroadcastPart(tbp);
                     else if(quality.equals("high")) dlInfo.addHighTwitchBroadcastPart(tbp);

@@ -359,7 +359,9 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         for (TwitchVideoPart videoPart : videoParts) {
             videoPart.getFileExtension();
             videoPart.setPartNumber(i++);
-            File destinationFile = new File(destinationFilenameTemplate.getAbsolutePath() + "_" + String.valueOf(videoPart.getPartNumber() + videoPart.getFileExtension()));
+            String destinationFilePath = String.format("%s_%04d%s", destinationFilenameTemplate.getAbsolutePath(), videoPart.getPartNumber(), videoPart.getFileExtension());
+            File destinationFile = new File(destinationFilePath);
+//            File destinationFile = new File(destinationFilenameTemplate.getAbsolutePath() + "_" + String.valueOf(videoPart.getPartNumber() + videoPart.getFileExtension()));
             destinationFiles.add(destinationFile);
             TwitchDownloadWorker tdw = new TwitchDownloadWorker(destinationFile, videoPart);
             tdw.addPropertyChangeListener(this);
@@ -440,7 +442,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             while (sc.hasNextLine()) {
                 File videoPart = new File(sc.nextLine());
                 if (outputStream == null) {
-                    if (!outfile.getPath().endsWith(".ts")) {
+                    if (! videoPart.getPath().endsWith(".ts")) {
                         return;
                     }
 //                    if(video is not a ts-Stream) return;

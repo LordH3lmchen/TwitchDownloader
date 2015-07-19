@@ -41,6 +41,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
     private final JButton playBtn;
     private final JButton convertBtn;
     private final JButton deleteBtn;
+    private final JButton prefrencesBtn;
 
     private final JLabel channelDisplayNameLbl;
     private final JCheckBox markForBatchCheckbo;
@@ -63,9 +64,12 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
     private static final Border downloadingBorder = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, borderWidth, downloadingColor);
     private static final Border convertingBorder = BorderFactory.createMatteBorder(borderWidth, borderWidth, borderWidth, borderWidth, convertingColor);
 
+
     public VideoInfoPanel(final TwitchVideoInfo relatedTwitchVideoInfoObject, final ChannelSyncControllerInterface controller) throws IOException {
         this.relatedTwitchVideoInfoObject = relatedTwitchVideoInfoObject;
         this.relatedTwitchVideoInfoObject.addPropertyChangeListenern(this);
+
+
         this.controller = controller;
         setLayout(new GridBagLayout());
 
@@ -181,6 +185,10 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         playBtn.setActionCommand("watchVideo");
         playBtn.addActionListener(this);
 
+        prefrencesBtn = new JButton("Prefrences");
+        prefrencesBtn.setActionCommand("prefrencesBtn");
+        prefrencesBtn.addActionListener(this);
+
 
         convertBtn = new JButton("Convert");
         convertBtn.addActionListener(this);
@@ -208,9 +216,9 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
     private void layoutComponents() {
 
         imageLbl.setBounds(0,0 ,320,180);
-        viewcountLbl.setBounds(5,0,310,25);
+        viewcountLbl.setBounds(5, 0, 310, 25);
         viewcountLbl.setHorizontalAlignment(SwingConstants.LEFT);
-        durationLbl.setBounds(5,0,310,25);
+        durationLbl.setBounds(5, 0, 310, 25);
         durationLbl.setHorizontalAlignment(SwingConstants.RIGHT);
         //Adding a dark bar to the previewImage to increase the readability of the viewcount and duration
         darkBarkLbl.setBounds(0,0,320,25);
@@ -267,6 +275,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
 
         btnPanel.add(deleteBtn);
         btnPanel.add(convertBtn);
+        btnPanel.add(prefrencesBtn);
         btnPanel.add(downloadBtn);
         btnPanel.add(playBtn);
         add(btnPanel, c);
@@ -278,6 +287,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
 
     private void setInitialLayout() {
         downloadBtn.setVisible(true);
+        prefrencesBtn.setVisible(false); //TODO set to true whenn implemented
         playBtn.setVisible(false);
         deleteBtn.setVisible(false);
         convertBtn.setVisible(false);
@@ -293,6 +303,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
 
     private void setDownloadedLayout() {
         downloadBtn.setVisible(false);
+        prefrencesBtn.setVisible(false);
         deleteBtn.setVisible(true);
         deleteBtn.setEnabled(true);
         playBtn.setVisible(true);
@@ -320,6 +331,7 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
         deleteBtn.setEnabled(false);
         downloadBtn.setEnabled(false);
         markForBatchCheckbo.setEnabled(false);
+        prefrencesBtn.setEnabled(false);
     }
 
 
@@ -355,7 +367,15 @@ public class VideoInfoPanel extends JPanel implements ItemListener, ActionListen
                 // Nothing right now
             }
 
+        } else if(e.getSource() == prefrencesBtn) {
+            createPrefrenceDialog();
         }
+    }
+
+    private void createPrefrenceDialog() {
+        VideoInfoPreferencesDialog preferencesDialog = new VideoInfoPreferencesDialog();
+        preferencesDialog.setVisible(true);
+
     }
 
     @Override

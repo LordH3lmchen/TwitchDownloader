@@ -80,7 +80,7 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
         this.progressFrame = new ChannelSyncLogFrame();
         this.playlistFolderPath = TwitchToolPreferences.getInstance().get(TwitchToolPreferences.DESTINATION_DIR_PREFKEY, OsUtils.getUserHome()) + "/playlists/";
         this.ffmpegExecutorService = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-        this.downloadExecutorService = new ThreadPoolExecutor(15, 15, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+        this.downloadExecutorService = new ThreadPoolExecutor(10, 10, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>()); // (15, 15, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>())
 
         twitchVideoInfoWorkerQueue = new LinkedBlockingQueue<>();
 
@@ -441,6 +441,10 @@ public class ChannelSyncController implements ChannelSyncControllerInterface {
             Scanner sc = new Scanner(playlist);
             while (sc.hasNextLine()) {
                 File videoPart = new File(sc.nextLine());
+                if(! videoPart.canRead()) {
+                    System.err.printf("Unable to read %s, skipping file", videoPart);
+                    continue;
+                }
                 if (outputStream == null) {
                     if (! videoPart.getPath().endsWith(".ts")) {
                         return;

@@ -1,6 +1,5 @@
 package com.trabauer.twitchtools.worker;
 
-import com.trabauer.twitchtools.model.WorkerQueue;
 import com.trabauer.twitchtools.model.twitch.TwitchVideoPart;
 
 import javax.swing.*;
@@ -8,6 +7,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -20,8 +20,9 @@ import java.net.URLConnection;
  *
  */
 public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
-    private File destinationFilename;
+    private File destinationFile;
     private TwitchVideoPart videoPart;
+    private int attempt;
 
 
     /**
@@ -29,8 +30,9 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
      *  @param videoPart
      */
     public TwitchDownloadWorker(File destinationFile, TwitchVideoPart videoPart) {
-        this.destinationFilename = destinationFile;
+        this.destinationFile = destinationFile;
         this.videoPart = videoPart;
+        this.attempt = 0;
     }
 
     /**
@@ -39,30 +41,38 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
      * @throws Exception
      */
     @Override
-    protected Void doInBackground() throws IOException {
+    protected Void doInBackground() throws TwitchDownloadException {
 
         int progress = 0;
         setProgress(0);
 
-        URL url = new URL(videoPart.getUrl());
+        URL url = null;
         InputStream is = null;
         FileOutputStream fos = null;
 
+        int len;
+        long done = 0;
+        float percent = 0.0F;
 
         try{
+            url = new URL(videoPart.getUrl());
+//            System.out.printf("Open Connection to %s\n", url.toString());
+            attempt++;
             URLConnection urlConnection = url.openConnection();
+            urlConnection.setReadTimeout(30000);
             int partSize = urlConnection.getContentLength();
+            if(attempt > 1) {
+                System.err.printf("Attempt nr. %3d\n", attempt);
+            }
+            System.out.printf("Downloading \"%s\"\t content length = %10d byte\n from: %s\n", destinationFile.getName(), partSize, url.toString());
             is = urlConnection.getInputStream();
-            File parent = new File(destinationFilename.getParent());
+            File parent = new File(destinationFile.getParent());
             if( ! parent.exists()) {
                 parent.mkdirs();
             }
             //System.out.println("Downloading " + file);
-            fos = new FileOutputStream(destinationFilename);
+            fos = new FileOutputStream(destinationFile);
             byte[] buffer = new byte[4096];
-            int len;
-            long done = 0;
-            float percent;
             while( (len=is.read(buffer)) > 0 ) {
                 fos.write(buffer, 0, len);
                 done+=len;
@@ -71,12 +81,43 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
                 //System.out.printf("\rProgress %10d/%10d, %3d %%", done, partSize, progress);
                 setProgress(Math.min(progress, 100));
             }
+            if(done>=partSize) {
+                System.out.printf("Download of %s complete\n", destinationFile.getName());
+            } else {
+                System.err.printf("Incomplete Download of %s\n", destinationFile.getName());
+                throw new SocketTimeoutException("incomplete download");
+            }
             setProgress(100);
+        } catch (SocketTimeoutException te) {
+            //te.printStackTrace();
+            System.err.println(te.getMessage());
+            System.err.printf("TimeOut at %.2f%% restarting download of %s\n URL: %s\n", percent, destinationFile.getName(), url.toString()); //TODO implement timeout handling
+            try {
+                is.close();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.destinationFile.delete();
+            setProgress(0);
+            if(attempt <= 10) {
+                this.doInBackground();
+            } else {
+                System.err.printf("Tried to download to often skipping file %s\n", destinationFile.getName());
+                throw new TwitchDownloadException(
+                        String.format("Tried to download %s to often skipping file \n", destinationFile.getName()),
+                        videoPart);
+            }
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            is.close();
-            fos.close();
+        }
+        finally {
+            try {
+                is.close();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -91,12 +132,12 @@ public class TwitchDownloadWorker extends SwingWorker<Void, Void> {
         this.videoPart = videoPart;
     }
 
-    public File getDestinationFilename() {
-        return destinationFilename;
+    public File getDestinationFile() {
+        return destinationFile;
     }
 
-    public void setDestinationFilename(File destinationFilename) {
-        this.destinationFilename = destinationFilename;
+    public void setDestinationFile(File destinationFile) {
+        this.destinationFile = destinationFile;
     }
 
     public TwitchVideoPart getVideoPart() {

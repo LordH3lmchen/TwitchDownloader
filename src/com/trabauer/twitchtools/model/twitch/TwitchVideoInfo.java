@@ -57,7 +57,7 @@ public class TwitchVideoInfo extends Observable {
     @SerializedName("recorded_at")
     private String recordedAt;
     private String game;
-    private int    length;
+    private double length; //Twitch changed that to double.  
     private String preview;
     private String url;
     private int    views;
@@ -75,6 +75,9 @@ public class TwitchVideoInfo extends Observable {
     private boolean dlInfoNeedsUpdate = false;
     private TwitchVideoInfo.State state;
     private HashMap<String, File> relatedFiles;
+
+    private int startOffset;
+    private int endOffset;
 
 
     protected PropertyChangeSupport pcs;
@@ -140,7 +143,6 @@ public class TwitchVideoInfo extends Observable {
         result = 31 * result + id.hashCode();
         result = 31 * result + (recordedAt != null ? recordedAt.hashCode() : 0);
         result = 31 * result + (game != null ? game.hashCode() : 0);
-        result = 31 * result + length;
         result = 31 * result + (preview != null ? preview.hashCode() : 0);
         result = 31 * result + (url != null ? url.hashCode() : 0);
         result = 31 * result + views;
@@ -288,7 +290,7 @@ public class TwitchVideoInfo extends Observable {
     }
 
     public int getLength() {
-        return length;
+        return (int)length;
     }
 
     public URL getPreviewUrl() throws MalformedURLException {
@@ -376,7 +378,6 @@ public class TwitchVideoInfo extends Observable {
                     String previousPartFileName = null;
                     int startOffset = 0;
                     int endOffset = 0;
-// TODO Test the new playlist parsing.
                     while (playlistSc.hasNextLine()) {
                         String partLine = playlistSc.nextLine();
 //                        System.out.println(partLine);
@@ -480,7 +481,7 @@ public class TwitchVideoInfo extends Observable {
     }
 
     public void setLength(int length) {
-        int oldLength = this.length;
+        double oldLength = this.length;
         this.length = length;
         pcs.firePropertyChange("length", oldLength, length);
     }
@@ -605,6 +606,22 @@ public class TwitchVideoInfo extends Observable {
         }
 
         return streamInformation;
+    }
+
+    public int getStartOffset() {
+        return startOffset;
+    }
+
+    public void setStartOffset(int startOffset) {
+        this.startOffset = startOffset;
+    }
+
+    public int getEndOffset() {
+        return endOffset;
+    }
+
+    public void setEndOffset(int endOffset) {
+        this.endOffset = endOffset;
     }
 
     public TwitchChannel getChannel() {
